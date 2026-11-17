@@ -52,12 +52,12 @@ export default function DelayedChallenges({ state, act, paused, resultRef }: {
       </div>
       <small>Elegí una idea y ponela a prueba.</small>
     </div> : <>
-      {!completed && <p className="dc-current-idea">Tu idea: <strong>{lesson.options[progress.prediction!]}</strong></p>}
+      {!completed && !wrong && <p className="dc-current-idea">Tu idea: <strong>{lesson.options[progress.prediction!]}</strong></p>}
       <div ref={resultRef} className={`dc-guide-feedback ${ready && !changed && wrong ? 'dc-guide-retry' : ''}`} tabIndex={-1} role="status" aria-live="polite" aria-atomic="true">
         {!ready ? <p>{instruction}</p>
           : changed ? <p>Cambiaste el montaje. Las tarjetas conservan la comparación anterior.</p>
           : completed ? <><strong>✓ Reto completado · {achievements}/4</strong><p>{lesson.explanation}</p></>
-          : wrong ? <><strong>Revisá tu idea con lo que observaste.</strong><p>{lesson.hint}</p></>
+          : wrong ? <><strong>Revisá tu idea: {lesson.options[progress.prediction!]}.</strong><p>{lesson.hint}</p></>
             : <>{progress.feedback === 'missing' && <strong>Todavía falta observar.</strong>}<p>{instruction}</p></>}
       </div>
       <small className="dc-evidence-label">Guardado en este reto</small>
