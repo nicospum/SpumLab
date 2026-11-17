@@ -15,7 +15,28 @@ Un interferómetro de Mach–Zehnder ideal permite enviar un fotón desde la fue
 - Cada emisión produce un solo clic. Los dos trazos representan amplitudes de un solo fotón. El dibujo no afirma que se hayan observado dos trayectorias simultáneamente.
 - **Simular 100 detecciones** muestrea cien repeticiones independientes con la misma configuración. La tabla agrupa por fase, salida y momento de elección; cambiar controles preserva los resultados anteriores. Los puntos muestran los últimos 24 clics de esa condición.
 
-Tres exploraciones proponen comparar 0° con 180° en salida reunida, repetir con salida abierta y comparar elección temprana con tardía para un montaje final idéntico. Las explicaciones, la tabla y las fuentes se expanden debajo del experimento.
+Cuatro retos guiados proponen observar un fotón individual, comparar 0° con 180° en salida reunida, repetir con salida abierta y comparar elección temprana con tardía para un montaje final idéntico. Las explicaciones, la tabla y las fuentes se expanden debajo del experimento.
+
+### Cuatro retos guiados
+
+«Empezar los cuatro retos» activa la guía junto al montaje. En escritorio ocupa una columna lateral; en celular se coloca inmediatamente debajo y reemplaza los textos y conteos redundantes de la exploración libre. Cada etapa muestra una predicción, la siguiente acción, las observaciones guardadas o una conclusión. Se puede seleccionar cualquier reto y volver a «Libre». Las partidas, los registros generales y los logros se conservan durante la visita; recargar inicia otra sesión.
+
+| Reto | Prueba requerida | Qué permite entender |
+| --- | --- | --- |
+| Un fotón, un clic | Emitir manualmente con fase 90°, salida reunida y elección antes | Los dos trazos son amplitudes de un fotón; cada disparo produce un solo clic |
+| Cambiar el destino | Acumular al menos 100 clics a 0° y otros 100 a 180°, con salida reunida y elección antes | La fase cambia la interferencia y el detector que concentra los clics |
+| Identificar el camino | Repetir ambas fases con al menos 100 clics por fase, salida abierta y elección antes | Cada detector identifica un brazo; las probabilidades son 50/50 y los conteos pueden variar |
+| Elegir cuando ya entró | Emitir a 0° con salida reunida antes; luego emitir a 0° con salida abierta, insertar el divisor durante la pausa y continuar | Con la misma configuración final, elegir antes o después produce las mismas probabilidades |
+
+Cada reto exige elegir una predicción y realizar observaciones nuevas mientras está activo. Una predicción incorrecta permite experimentar. «Comprobar mi idea» sólo completa el reto si se reunieron las observaciones y la explicación coincide con ellas. La devolución de una respuesta incorrecta ofrece una pista; «Revisar mi idea» conserva la evidencia y vuelve a pedir una predicción antes de otro disparo.
+
+El botón «Preparar» ajusta la configuración de la prueba pendiente y conserva resultados. No registra observaciones por sí mismo. La fuente, el divisor y la fase siguen siendo controles directos sobre la escena. Los retos primero y cuarto requieren disparos individuales y no admiten lotes como evidencia. Sus tarjetas guardan el primer disparo válido, de modo que repetir no transforme una observación de un fotón en un contador de varios; la tabla general sigue acumulando todos los ensayos. Los retos estadísticos admiten lotes o emisiones individuales y nunca exigen exactamente 50 clics por detector.
+
+El motor conserva evidencia de la secuencia del cuarto reto: empezar con salida abierta, insertar durante la pausa y continuar con salida reunida. Una salida ya reunida al emitir, un lote, una fase distinta o un clic de una visita anterior no satisfacen esa prueba. Los logros se otorgan sólo mediante comprobación explícita, no por preparar un montaje o acertar una opción sin observar.
+
+Al reabrir un reto que ya tiene todas sus observaciones, la escena recupera el montaje final de esa prueba, sin emitir ni alterar resultados. Así la conclusión guardada no aparece junto a la configuración de otro reto. La revisión de los cuatro retos pasó 480 pruebas del código publicado, lint y compilación. Tres agentes revisaron código, ciencia y producto; se probaron respuestas incorrectas y correctas de cada reto, ayudas, regreso a la exploración libre y encuadres de 320 × 700 y 390 × 844.
+
+`src/wheeler/challenges.ts` envuelve el motor óptico con la lógica de predicción y evidencia; `DelayedChallenges.tsx` presenta la guía. `tests/wheeler-challenges.test.mjs` comprueba observaciones insuficientes, condiciones incorrectas, opciones correctas e incorrectas de los cuatro retos, independencia del historial previo, disparos repetidos, revisión, navegación y la secuencia tardía. La revisión independiente de ciencia y producto incluye escritorio y tamaños móviles emulados; siguen pendientes Safari y teléfonos físicos.
 
 ### Modelo y alcance
 

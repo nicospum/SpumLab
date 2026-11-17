@@ -1,13 +1,23 @@
-import { useEffect, useLayoutEffect, useReducer, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useReducer, useRef, useState } from 'react'
 import DelayedBoard from './DelayedBoard'
-import { canChoose, createDelayedState, currentMeasurement, delayedReducer, effectiveSetup, idle, probabilities } from './delayed'
+import DelayedChallenges from './DelayedChallenges'
+import { createGuidedState, guidedReducer } from './challenges'
+import { canChoose, currentMeasurement, effectiveSetup, idle, probabilities } from './delayed'
+import type { DelayedAction } from './delayed'
 import './delayed.css'
 
 export default function DelayedChoice({ active }: { active: boolean }) {
-  const [state, dispatch] = useReducer(delayedReducer, undefined, createDelayedState)
+  const [learning, act] = useReducer(guidedReducer, undefined, createGuidedState)
+  const state = learning.sim
+  const dispatch = useCallback((action: DelayedAction) => act({ type: 'sim', action }), [])
+  const guided = learning.active !== null
+  const wasGuided = useRef(guided)
+  const progress = guided ? learning.progress[learning.active!] : null
+  const needsPrediction = guided && progress?.prediction === null
   const [paused, setPaused] = useState(false)
   const viewport = useRef<HTMLDivElement>(null)
   const status = useRef<HTMLDivElement>(null)
+  const guideResult = useRef<HTMLDivElement>(null)
   const splitter = useRef<HTMLButtonElement>(null)
   const pause = useRef<HTMLButtonElement>(null)
   const initialStage = useRef(state.stage)
@@ -40,17 +50,34 @@ export default function DelayedChoice({ active }: { active: boolean }) {
       cancelAnimationFrame(frame)
       document.removeEventListener('visibilitychange', resetClock)
     }
-  }, [active, moving, paused])
+  }, [active, moving, paused, dispatch])
 
   useLayoutEffect(() => {
     if (!active || initialStage.current === state.stage) return
     initialStage.current = state.stage
     if (state.stage === 'choosing') splitter.current?.focus({ preventScroll: true })
-    if (state.stage === 'detected') status.current?.focus({ preventScroll: true })
+    if (state.stage === 'detected') (guided ? guideResult.current : status.current)?.focus({ preventScroll: true })
     if (state.stage === 'entering' || state.stage === 'leaving') pause.current?.focus({ preventScroll: true })
     if (viewport.current && (viewport.current.getBoundingClientRect().top < -20 || viewport.current.getBoundingClientRect().bottom > window.innerHeight - 72))
       viewport.current.scrollIntoView({ block: 'start', behavior: 'instant' })
-  }, [active, state.stage])
+  }, [active, state.stage, guided])
+
+  useLayoutEffect(() => {
+    if (!active || !guided || !viewport.current) return
+    const target = guideResult.current ?? viewport.current.querySelector<HTMLButtonElement>('.dc-prediction-options button')
+    target?.focus({ preventScroll: true })
+    const bounds = viewport.current.getBoundingClientRect()
+    if (bounds.top < 0 || bounds.bottom > window.innerHeight - 64)
+      viewport.current.scrollIntoView({ block: 'start', behavior: 'instant' })
+  }, [active, guided, learning.active, progress?.prediction, progress?.feedback])
+
+  useLayoutEffect(() => {
+    const leaving = wasGuided.current && !guided
+    wasGuided.current = guided
+    if (!active || !leaving) return
+    status.current?.focus({ preventScroll: true })
+    viewport.current?.scrollIntoView({ block: 'start', behavior: 'instant' })
+  }, [active, guided])
 
   let headline = 'Tocá la fuente para enviar un fotón.'
   const reading = setup.closed
@@ -74,12 +101,17 @@ export default function DelayedChoice({ active }: { active: boolean }) {
   return <section id="eleccion-retardada" className="wd-game dc-lab" data-scene-workspace="" aria-labelledby="dc-title">
     <div className="dc-heading"><p className="wd-eyebrow">ELECCIÓN RETARDADA DE WHEELER</p><h2 id="dc-title">Elegir cuando ya entró.</h2>
       <p>Enviá un fotón, una unidad de luz. Elegí si sus caminos posibles se reúnen y observá dónde se registra el clic.</p></div>
-    <div className="dc-timing" aria-label="Momento de la elección">
+    {!guided && <div className="dc-explore-tools">
+      <button disabled={!ready} onClick={() => act({ type: 'lesson', index: 0 })} data-help-title="Cuatro retos guiados" data-help-body="Hacé una predicción, probala sobre el montaje y comprobá tu explicación. Cada reto guarda sus propias observaciones durante esta visita; podés volver a la exploración libre.">Empezar los cuatro retos →</button>
+      <span>{learning.progress.filter(item => item.complete).length}/4 comprendidos</span>
+    </div>}
+    {!guided && <div className="dc-timing" aria-label="Momento de la elección">
       <button disabled={!ready} aria-pressed={state.setup.timing === 'before'} onClick={() => dispatch({ type: 'timing', value: 'before' })} data-help-title="Elegir antes de emitir" data-help-body="El divisor de salida se fija al emitir y permanece igual durante ese disparo.">Elegir antes</button>
       <button disabled={!ready} aria-pressed={state.setup.timing === 'after'} onClick={() => dispatch({ type: 'timing', value: 'after' })} data-help-title="Elegir después de entrar" data-help-body="El viaje se pausa después del primer divisor. Podés insertar o retirar el divisor de salida antes de continuar hacia los detectores.">Elegir después</button>
-    </div>
+    </div>}
 
-    <div className="dc-workspace" ref={viewport}>
+    <div className={`dc-workspace ${guided ? 'dc-guided' : ''}`} ref={viewport}>
+      <div className="dc-apparatus">
       <div className="dc-board spum-live-stage" aria-label="Interferómetro de dos caminos">
         <DelayedBoard state={state} active={active} />
         <div className="dc-reading" data-help-title={setup.closed ? 'Medir interferencia' : 'Identificar el brazo'}
@@ -108,14 +140,16 @@ export default function DelayedChoice({ active }: { active: boolean }) {
             onChange={event => dispatch({ type: 'phase', value: Number(event.target.value) })} />
           <small>{ready ? 'Cómo coinciden las ondas' : 'Fijada al emitir'}</small>
         </label>
-        <button className="dc-source" disabled={!ready} onClick={() => { setPaused(false); dispatch({ type: 'emit' }) }}
+        <button className="dc-source" disabled={!ready || needsPrediction} onClick={() => { setPaused(false); dispatch({ type: 'emit' }) }}
           data-help-title="Fuente de fotones individuales" data-help-body="Envía un fotón por disparo. El primer divisor prepara amplitudes en ambos brazos y al final se registra un solo clic.">
-          <span aria-hidden="true">✦</span>{ready ? 'Emitir 1 fotón' : 'Fotón en viaje'}
+          <span aria-hidden="true">✦</span>{ready ? needsPrediction ? 'Elegí tu idea' : 'Emitir 1 fotón' : 'Fotón en viaje'}
         </button>
         {choosing && <button className="dc-continue" onClick={() => { setPaused(false); dispatch({ type: 'continue' }) }} data-help-title="Continuar con tu elección" data-help-body="Fija el divisor de salida para este fotón y continúa hasta una detección. Después podés cambiar el montaje y emitir otro.">Continuar →</button>}
         {moving && <button ref={pause} className="dc-pause" onClick={() => setPaused(value => !value)} data-help-title="Pausar o continuar el dibujo" data-help-body="Detiene o reanuda la animación para observarla. Es una ayuda didáctica: no detiene luz real ni cambia el montaje o sus probabilidades.">{paused ? 'Seguir viaje ▶' : 'Pausar viaje Ⅱ'}</button>}
       </div>
-      <p className="dc-legend" data-help-title="Dos trazos, un fotón" data-help-body="Los trazos representan amplitudes, cantidades con las que calculamos probabilidades. No muestran dos partículas ni trayectorias observadas. Cada fotón termina en un solo clic. El viaje se ralentiza para poder explorar el montaje.">Dos amplitudes de un fotón · Un solo clic · Viaje ralentizado</p>
+      <p className="dc-legend" data-help-title="Dos trazos, un fotón" data-help-body="Los trazos representan amplitudes, cantidades con las que calculamos probabilidades. No muestran dos partículas ni trayectorias observadas. Cada fotón termina en un solo clic. El viaje se ralentiza para poder explorar el montaje.">{guided ? 'Un fotón · Un clic · Viaje ralentizado' : 'Dos amplitudes de un fotón · Un solo clic · Viaje ralentizado'}</p>
+      </div>
+      {guided ? <DelayedChallenges state={learning} act={act} paused={paused} resultRef={guideResult} /> : <div className="dc-free-results">
       <div className="dc-status" ref={status} tabIndex={-1} role="status" aria-live="polite" aria-atomic="true"><strong>{headline}</strong><p>{explanation}</p></div>
       <div className="dc-counts">
         <span><strong>{total}</strong> {total === 1 ? 'detección' : 'detecciones'} con este montaje
@@ -130,6 +164,7 @@ export default function DelayedChoice({ active }: { active: boolean }) {
           data-help-title="Cien repeticiones del montaje" data-help-body="Calcula cien disparos independientes con la fase, salida y momento de elección actuales. Cada resultado se sortea con las probabilidades del modelo. Los puntos muestran las últimas 24 detecciones.">Simular 100 detecciones</button>
         <button disabled={!ready || !state.measurements.length} onClick={() => dispatch({ type: 'clear' })} data-help-title="Vaciar todos los conteos" data-help-body="Borra las detecciones y la tabla de todas las configuraciones de esta escena. Conserva la fase, el divisor y el momento de elección actuales. No modifica tu partida de veinte preguntas.">Vaciar conteos</button>
       </div>
+      </div>}
     </div>
 
     <div className="dc-notes">
@@ -141,11 +176,6 @@ export default function DelayedChoice({ active }: { active: boolean }) {
             return <tr key={`${item.phase}-${item.closed}-${item.timing}`}><th scope="row">{item.phase}° · {item.closed ? 'reunidos' : 'abierta'}<small>Elección {item.timing === 'after' ? 'después' : 'antes'}</small></th>
               <td>{count}</td><td>{Math.round(item.d0 / count * 100)}%</td><td>{Math.round(probabilities(item.phase, item.closed)[0] * 100)}%</td></tr>
           })}</tbody></table></div> : <p>Emití un fotón o simulá un lote para registrar la primera condición.</p>}
-      </details>
-      <details><summary>Tres cosas para descubrir jugando</summary>
-        <ol><li><strong>¿Podés cambiar el detector?</strong> Con la salida reunida, probá 0° y simulá 100 detecciones. Repetí a 180°. El reparto cambia: las amplitudes se refuerzan en una salida y se cancelan en la otra.</li>
-          <li><strong>¿La fase siempre importa?</strong> Retirá el divisor y repetí esas fases. La probabilidad queda en 50/50: cada detector identifica un brazo. Los conteos pueden fluctuar alrededor de ese reparto.</li>
-          <li><strong>¿Qué cambia al elegir tarde?</strong> Elegí después, emití un fotón y cambiá la salida durante la pausa. Repetí el mismo montaje eligiendo antes. Con la misma fase y salida, ambos dan las mismas probabilidades.</li></ol>
       </details>
       <details><summary>Qué cambia cuando medís</summary>
         <p>Los detectores registran fotones en ambas configuraciones. Con la salida abierta, cada detector está asociado a un brazo. Al insertar el segundo divisor, cada salida combina amplitudes de los dos brazos. La fase determina si se refuerzan o se cancelan.</p>

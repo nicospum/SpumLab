@@ -30,7 +30,7 @@ El [seguimiento del catálogo completo](docs/revision-integral/seguimiento/READM
 - `/curva-de-page/`: paradoja de la información, entropía calculada de qubits, correlaciones y cuatro retos. Ver [modelo y límites](docs/PAGE_MODELO.md) y [revisión independiente](docs/QA_PAGE_2026-11-02.md).
 - `/eratostenes/`: Dos sombras, una Tierra; dos sitios del mismo meridiano, varillas y sombras manipulables, distancia y ángulos para reconstruir la circunferencia terrestre con cuatro retos. Ver [modelo, interacción y límites](docs/ERATOSTENES_LABORATORIO.md) y [QA de producto](docs/QA_ERATOSTENES_2026-11-02.md).
 - `/bell/`: Bell: ¿respuestas escritas?; analizadores giratorios, cuatro correlaciones CHSH y comparación entre un modelo local explícito y predicciones cuánticas. Ver [modelo, supuestos y límites](docs/BELL_LABORATORIO.md) y [QA de producto](docs/QA_BELL_2026-11-02.md).
-- `/wheeler/` — El universo de Wheeler. Veinte preguntas con dos reglas e historial, y elección retardada con fotones individuales, fase y divisor manipulables sobre la escena. Ver [reglas, modelos y fuentes](docs/WHEELER_LABORATORIO.md).
+- `/wheeler/` — El universo de Wheeler. Veinte preguntas con dos reglas e historial, y elección retardada con cuatro retos guiados, fotones individuales, fase y divisor manipulables sobre la escena. Ver [reglas, modelos y fuentes](docs/WHEELER_LABORATORIO.md).
 
 La actividad **Contar lo que no vemos** está dentro de `/entropia/#information-bridge`; no agrega otra tarjeta de laboratorio.
 
