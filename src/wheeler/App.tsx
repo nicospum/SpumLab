@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { MoreLabs } from '../components/ui/LabJourney'
 import { ask, createGame, current, LIMIT, matches, pathTo, QUESTIONS, questionText, revisit, WORLDS } from './game'
@@ -6,9 +6,11 @@ import type { Game, Mode, WorldId } from './game'
 import DelayedChoice from './DelayedChoice'
 
 const fresh = (mode: Mode) => createGame(mode, crypto.getRandomValues(new Uint32Array(1))[0])
+const UniverseScene = lazy(() => import('./UniverseScene'))
 
 export default function App() {
-  const [scene, setScene] = useState<'questions' | 'delayed'>(() => location.hash === '#eleccion-retardada' ? 'delayed' : 'questions')
+  const [scene, setScene] = useState<'questions' | 'delayed' | 'universe'>(() => location.hash === '#universo-que-responde' ? 'universe' : location.hash === '#eleccion-retardada' ? 'delayed' : 'questions')
+  const [universeVisited, setUniverseVisited] = useState(scene === 'universe')
   const [anchor, setAnchor] = useState(() => location.hash)
   const framedAnchor = useRef<string | null>(null)
   const [games, setGames] = useState<Record<Mode, Game>>(() => ({ surprise: fresh('surprise'), fixed: fresh('fixed') }))
@@ -52,6 +54,7 @@ export default function App() {
     function followHash() {
       setAnchor(location.hash)
       if (location.hash === '#eleccion-retardada') setScene('delayed')
+      else if (location.hash === '#universo-que-responde') { setScene('universe'); setUniverseVisited(true) }
       else if (['', '#juego'].includes(location.hash)) setScene('questions')
     }
     window.addEventListener('hashchange', followHash)
@@ -64,14 +67,15 @@ export default function App() {
     // played scene at its controls, without overwriting the guided scene's focus.
     const frame = requestAnimationFrame(() => {
       framedAnchor.current = anchor
-      if (!['#eleccion-retardada', '#juego', '#wheeler-idea', '#wheeler-escenas'].includes(anchor)) return
+      if (!['#eleccion-retardada', '#universo-que-responde', '#juego', '#wheeler-idea', '#wheeler-escenas'].includes(anchor)) return
       const section = document.getElementById(anchor.slice(1))
       const guided = anchor === '#eleccion-retardada' ? section?.querySelector<HTMLElement>('.dc-guided') : null
+      const universe = anchor === '#universo-que-responde' ? section?.querySelector<HTMLElement>('.wu-guided') : null
       const resumeQuestions = anchor === '#juego' && game.nodes.length > 1
-      const target = guided ?? (resumeQuestions ? playfield.current : section)
+      const target = universe ?? guided ?? (resumeQuestions ? playfield.current : section)
       const focusTarget = guided
         ? guided.querySelector<HTMLElement>('.dc-choose-now, .dc-pause') ?? guided.querySelector<HTMLElement>('[role="status"], .dc-prediction-options button')
-        : resumeQuestions ? feedback.current : section
+        : universe ?? (resumeQuestions ? feedback.current : section)
       focusTarget?.focus({ preventScroll: true })
       target?.scrollIntoView({ block: 'start', behavior: 'instant' })
     })
@@ -135,8 +139,8 @@ export default function App() {
             <p className="wd-eyebrow">JOHN ARCHIBALD WHEELER</p>
             <h1 id="wd-title">It from <em>bit.</em></h1>
             <p className="wd-hero-question">¿El mundo ya estaba decidido?</p>
-            <p>Jugá con preguntas y con fotones. Explorá qué cambia cuando elegís cómo observar.</p>
-            <a className="wd-start" href="#wheeler-escenas">Explorar las dos escenas <span aria-hidden="true">↗</span></a>
+            <p>Jugá con preguntas, fotones y un universo por explorar. Descubrí qué cambia cuando elegís cómo observar.</p>
+            <a className="wd-start" href="#wheeler-escenas">Explorar las tres escenas <span aria-hidden="true">↗</span></a>
             <span className="wd-hypothesis">Universo participativo · Una hipótesis de Wheeler</span>
           </div>
           <figure>
@@ -148,6 +152,7 @@ export default function App() {
         <nav id="wheeler-escenas" className="wd-scene-nav" tabIndex={-1} aria-label="Escenas del laboratorio de Wheeler">
           <a href="#juego" aria-current={scene === 'questions' ? 'page' : undefined}><span>1 · Analogía clásica</span><strong>El mundo sin elegir</strong><small>Preguntas → respuestas sí/no</small></a>
           <a href="#eleccion-retardada" aria-current={scene === 'delayed' ? 'page' : undefined}><span>2 · Modelo cuántico</span><strong>Elección retardada</strong><small>Montaje → clics en detectores</small></a>
+          <a href="#universo-que-responde" aria-current={scene === 'universe' ? 'page' : undefined}><span>3 · Metáfora explorable</span><strong>El universo que responde</strong><small>Registros → un mapa del mundo</small></a>
         </nav>
         <div hidden={scene !== 'questions'}>
         <section className="wd-game" id="juego" tabIndex={-1} data-scene-workspace="" aria-labelledby="wd-game-title">
@@ -252,7 +257,7 @@ export default function App() {
           <div className="wd-connection">
             <h3>De las preguntas a las mediciones</h3>
             <p>En el juego elegís preguntas y guardás respuestas sí/no. Ahora elegís cómo medir un fotón y guardás clics. La conexión es <strong>pregunta → registro</strong>: primero una analogía; después, un modelo cuántico.</p>
-            <p><em>It from bit</em> sigue siendo una hipótesis de Wheeler. Podés ir y volver: ambas escenas conservan lo que hiciste durante esta visita.</p>
+            <p><em>It from bit</em> sigue siendo una hipótesis de Wheeler. Podés ir y volver: las tres escenas conservan lo que hiciste durante esta visita.</p>
             <a className="wd-next-scene" href="#eleccion-retardada">Seguir con la elección retardada →</a>
           </div>
         </section>
@@ -262,13 +267,16 @@ export default function App() {
             <h3>Una pregunta se convierte en un montaje</h3>
             <p>En las veinte preguntas registrás sí/no. Acá elegís el aparato y registrás clics. Cambiar la medición permite estudiar el camino o la interferencia; no demuestra que puedas cambiar el pasado.</p>
             <a className="wd-next-scene" href="#juego">← Volver a las veinte preguntas</a>
+            <a className="wd-next-scene" href="#universo-que-responde">Seguir con el universo que responde →</a>
           </div>
         </div>
+        <div hidden={scene !== 'universe'}>{universeVisited && <Suspense fallback={<p role="status">Preparando el universo…</p>}><UniverseScene active={scene === 'universe'} /></Suspense>}</div>
 
         <section id="wheeler-idea" className="wd-reading" tabIndex={-1} aria-labelledby="wd-idea-title">
-          <div><p className="wd-eyebrow">EL HILO ENTRE LAS DOS ESCENAS</p><h2 id="wd-idea-title">¿Qué une una palabra<br />y un fotón?</h2></div>
+          <div><p className="wd-eyebrow">EL HILO ENTRE LAS TRES ESCENAS</p><h2 id="wd-idea-title">De las preguntas<br />a un mundo registrado.</h2></div>
           <div>
-            <p>En ambas actividades elegís una pregunta y obtenés un registro. En el juego, la pregunta es una frase; en el experimento, se concreta en un aparato. La analogía invita a pensar en esa relación; el modelo cuántico permite calcular probabilidades de detección.</p>
+            <p>En las dos primeras escenas elegís una pregunta y obtenés un registro. En el juego, la pregunta es una frase; en el experimento, se concreta en un aparato. La analogía invita a pensar en esa relación; el modelo cuántico permite calcular probabilidades de detección.</p>
+            <p>En «El universo que responde» llevás esa pregunta a un mapa explorable: cada consulta añade una propiedad a su representación. Es una metáfora visual para comparar reglas del juego, no una demostración de que observar cree materia.</p>
             <p>Wheeler contó una partida de veinte preguntas en la que terminó adivinando «nube». Sus amigos entonces revelaron la sorpresa. Habían decidido responder sin ponerse de acuerdo previamente en una palabra. Cada respuesta tenía que ser compatible con alguna palabra y con todas las respuestas anteriores.</p>
             <p>En esta adaptación podés ver y tocar las posibilidades. En Sorpresa, el programa sortea entre sí y no cuando ambas respuestas son compatibles. Si solo una lo es, la respuesta queda obligada. En Palabra elegida, el objeto se fija al empezar.</p>
             <p>Un mismo registro puede encajar con las dos reglas. Volver atrás te permite comparar recorridos alternativos. Tus elecciones y las respuestas del juego participan en el resultado.</p>

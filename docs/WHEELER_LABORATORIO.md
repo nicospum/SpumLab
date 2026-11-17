@@ -1,8 +1,8 @@
-# Wheeler · Preguntas y elección retardada
+# Wheeler · Preguntas, elección retardada y universo participativo
 
-Primera escena del laboratorio independiente `/wheeler/`, incorporado al catálogo de SPUM. La portada aprobada reinterpreta artísticamente el ojo y el universo participativo mediante una imagen generada. Se distribuye como WebP de 312 KB y 1254 × 1254 píxeles.
+El laboratorio independiente `/wheeler/`, incorporado al catálogo de SPUM, contiene tres escenas: el juego de las veinte preguntas, la elección retardada y «El universo que responde». La portada aprobada reinterpreta artísticamente el ojo y el universo participativo mediante una imagen generada. Se distribuye como WebP de 312 KB y 1254 × 1254 píxeles.
 
-La segunda escena se abre directamente en `/wheeler/#eleccion-retardada`. Las dos escenas conservan su estado durante la visita. Cambiar de escena pausa el viaje de un fotón; volver permite continuarlo. Recargar inicia una sesión nueva.
+La segunda escena se abre directamente en `/wheeler/#eleccion-retardada` y la tercera en `/wheeler/#universo-que-responde`. Las tres escenas conservan su estado durante la visita. Cambiar de escena pausa el viaje de un fotón; volver permite continuarlo. Recargar inicia una sesión nueva.
 
 ## Segunda escena: elegir cuando ya entró
 
@@ -135,3 +135,56 @@ La revisión completa encontró que pasar del juego a los fotones dejaba oculto 
 La navegación usa el hash como única fuente del cambio de escena: abrir un enlace en otra pestaña no cambia la partida original. Al regresar, se conservan las ramas del juego, los conteos y la guía; el foco y el encuadre vuelven a los controles de la actividad en curso. Consultar la explicación mientras viaja un fotón no permite que un cambio de etapa desplace la lectura. El modo ayuda descarta la consulta de la escena anterior al navegar, incluidos eventos de puntero pendientes, y permanece activado.
 
 Tres agentes revisaron código, ciencia y recorrido de producto. La verificación incluyó navegación de ida y vuelta, alternativas desde una pregunta anterior, conservación de resultados y pantallas móviles emuladas de 320 × 700 y 390 × 844. Pasaron las 484 pruebas del código publicado, lint y compilación. Safari, teléfonos físicos y comprensión con participantes siguen pendientes; QA no equivale a una medición de aprendizaje.
+
+## Tercera escena: el universo que responde
+
+Un mapa tridimensional oscuro adquiere cuerpos, profundidad y recorridos al consultar seis regiones. El ojo representa un instrumento simbólico. La oscuridad significa «sin registrar», no «no existe». Esta actividad es una metáfora clásica de *it from bit*, distinta del modelo cuántico calculable de la segunda escena. No reproduce creación física, formación de galaxias ni una evolución cuántica. La fuente conceptual sigue siendo Wheeler, *Information, Physics, Quantum* (1989), §§19.2 y 19.4.
+
+### Interacción y representación
+
+Tocar una región aplica la herramienta elegida y registra su respuesta. También se puede elegir una región en un selector y pulsar «Observar», sin depender de gestos sobre el dibujo. Arrastrar el fondo gira el mapa; pellizcar o usar los botones de acercamiento cambia el punto de vista. «Centrar vista» recupera el encuadre inicial sin borrar datos. «Pausar movimiento» detiene la animación ilustrativa.
+
+| Herramienta | Pregunta del modelo | Cambio visible |
+| --- | --- | --- |
+| Luz | ¿Emite luz visible propia? | Distingue una fuente luminosa de un cuerpo sin luz visible propia; este último puede verse por iluminación reflejada |
+| Distancia | ¿Está en la zona cercana? | Despliega profundidad en el mapa, con posiciones gráficas distintas para cerca y lejos |
+| Movimiento | ¿Cambia de posición en este mapa? | Muestra un recorrido ilustrativo o una posición que permanece fija |
+
+«Cerca» y «lejos» se definen respecto del punto de vista inicial. Girar o acercar la cámara no cambia ese registro. El desplazamiento gráfico al consultar distancia representa nueva información, no una fuerza que empuja el objeto. Tamaños, profundidades y tiempos son escalas de dibujo sin unidades físicas; las estrellas de fondo y las nubes de color son decorativas. Las propiedades no consultadas permanecen sin registrar, incluso si el motor ya las tiene fijadas en la regla correspondiente.
+
+### Dos reglas y recorridos alternativos
+
+- **Al preguntar:** el motor completa una propiedad cuando se consulta y conserva las respuestas de la rama. La continuación de propiedades todavía no registradas puede depender del orden de las preguntas.
+- **Desde el inicio:** el motor prepara todas las respuestas al iniciar la sesión y sólo muestra las consultadas. El orden de las preguntas no cambia esas propiedades.
+
+Alba y Eco son un par didáctico preparado en ambas reglas: las dos emiten luz visible propia, Alba está cerca y Eco lejos. Las otras respuestas se generan con una semilla reproducible; no se presentan como resultados aleatorios de una medición cuántica. El cuarto reto utiliza deliberadamente el mismo registro de luz para mostrar que una respuesta aislada puede ser compatible con dos reglas diferentes. No sostiene que todos sus posibles registros sean indistinguibles.
+
+«Una consulta atrás» recupera el estado anterior del juego. «Registros y caminos» permite volver a cualquier punto guardado y consultar otra propiedad; conserva las ramas anteriores. Repetir una propiedad conocida devuelve el mismo valor y no agrega un registro nuevo. Repetir la pregunta de un hijo ya guardado desde su mismo padre recupera ese hijo. Deshacer es una herramienta de comparación del juego, no una afirmación de que se pueda modificar el pasado físico.
+
+Cada regla conserva un árbol independiente de hasta 161 nodos, incluida la raíz. Una rama puede registrar las 18 propiedades del catálogo (seis regiones por tres herramientas). Alcanzar el límite impide crear más ramas, pero permite consultar las existentes. Cambiar de regla o de escena conserva mapas, respuestas y retos durante esta visita; recargar inicia partidas nuevas.
+
+### Cuatro retos del universo
+
+| Reto | Observaciones necesarias mientras está activo | Idea que se contrasta |
+| --- | --- | --- |
+| Encendé un rincón | Consultar Luz en Alba | Ahora hay un registro; no se probó que antes no existiera la región |
+| Separá las distancias | Consultar Distancia en Alba y Eco | Estar cerca en una imagen no determina la separación en profundidad |
+| El registro deja huella | Con Luz, observar Alba, luego Eco y volver a observar Alba, en la misma regla | Los registros de la rama se conservan al explorar otra región |
+| ¿Descubrir o completar? | Consultar Luz en Alba en ambas reglas | Esa respuesta común no permite distinguir cómo la decidió el juego |
+
+Seleccionar región, herramienta, regla o reto no cuenta como observación. Los registros de exploración libre no satisfacen automáticamente un reto recién iniciado; deben consultarse de nuevo durante su actividad. Cada reto exige además elegir una explicación y pulsar «Comprobar». Una respuesta incorrecta recibe una pista y conserva las observaciones para reintentar. El tercer reto no admite deshacer o cambiar de rama como sustituto de alejarse y volver a consultar: rebobinar reinicia esa secuencia mientras no esté completada.
+
+### Código, móvil y alcance de la verificación
+
+- `src/wheeler/universe.ts`: catálogo, preguntas, dos reglas, árbol de registros, acciones puras y evidencia de los retos. `createUniverse` inicia el estado; `universeReducer` recibe acciones; `currentUniverse`, `universePath` y `lessonEvidence` exponen la rama, su recorrido y los pasos del reto. `node.depth` cuenta propiedades registradas; `state.serial` cuenta consultas, incluidas repeticiones, para disparar la respuesta visual.
+- `src/wheeler/UniverseBoard.tsx`: visor WebGL con Three.js ya disponible en el proyecto. Genera geometría, partículas y luces sin descargar imágenes nuevas. Los botones de región se proyectan sobre el mapa y permiten interacción por teclado; si se alinean, sus etiquetas se separan mediante líneas guía. Hay ayudas de escena y una alternativa con regiones y registros si WebGL no está disponible. La resolución se limita a 1,6 píxeles físicos por píxel CSS y el dibujo a 30 fps; se omite el render fuera del visor o con la pestaña oculta. Las coordenadas DOM sólo se actualizan cuando cambian. El visor libera geometrías, materiales, textura, observadores, eventos y renderizador al desactivarse, conservando el estado del juego en su componente padre.
+- `src/wheeler/UniverseScene.tsx` y `universe.css`: herramientas, resultado, guía, reglas y lectura ampliada. La guía ocupa una columna junto al dibujo en escritorio y pasa debajo en pantallas angostas. En móvil, el visor guiado adapta su altura a la pantalla; las explicaciones extensas y el historial están cerrados de inicio. El movimiento respeta la preferencia de movimiento reducido.
+- `src/wheeler/App.tsx`, `src/portal/catalog.ts` y `wheeler/index.html`: tercera entrada del índice, navegación entre escenas, conservación durante la visita y metadatos que describen las tres actividades. El visor de esta escena se carga al visitarlo.
+
+`tests/wheeler-universe.test.mjs` añade 14 pruebas del motor. Comprueban la reconstrucción independiente de todos los registros desde sus ancestros, orden de preguntas, coherencia de la regla fijada, persistencia de ramas, repeticiones sin información nueva, límite de memoria, entradas inválidas y los cuatro retos con evidencia faltante, respuestas incorrectas y respuestas correctas. La prueba de coherencia recorre 90 partidas completas entre ambas reglas. Estas pruebas de lógica no reemplazan la revisión visual ni permiten afirmar que el visitante haya aprendido.
+
+La revisión independiente cubrió ciencia, código y experiencia. Se comprobaron los cuatro retos con observaciones insuficientes, respuestas incorrectas y correctas; consulta directa, ramas alternativas, recuperación del historial, cambio de reglas, navegación por las tres escenas y conservación de sus registros. Una auditoría adicional reconstruyó los datos de 60.000 estados/acciones del motor. Pasaron las 498 pruebas del código a publicar, lint y compilación.
+
+En navegador se revisaron escritorio y tamaños de 320 × 700 y 390 × 844. Se comprobaron arrastre, botones de zoom y pellizco con entrada táctil emulada, sin generar consultas accidentales. La ayuda no altera registros ni cubre el visor en los estados revisados. El cuarto reto separa la comparación de reglas y la pregunta final para que sus controles quepan en celular; las devoluciones reemplazan al formulario y permiten revisarlo conservando la evidencia. Se corrigieron un resultado anterior que parecía describir la herramienta recién seleccionada y la pérdida del encuadre al responder.
+
+Safari, teléfonos físicos y pruebas de comprensión con participantes permanecen pendientes; tamaños móviles emulados no equivalen a esos dispositivos.

@@ -102,7 +102,7 @@ export default function DelayedChoice({ active }: { active: boolean }) {
 
   return <section id="eleccion-retardada" className="wd-game dc-lab" tabIndex={-1} data-scene-workspace="" aria-labelledby="dc-title">
     <div className="dc-heading"><p className="wd-eyebrow">ELECCIÓN RETARDADA DE WHEELER</p><h2 id="dc-title">Elegir cuando ya entró.</h2>
-      <p>Enviá un fotón, una unidad de luz. Acá la «pregunta» se concreta en el montaje: elegís estudiar el camino o la interferencia. Cada clic es un registro. <a href="#wheeler-idea">¿Qué une las dos escenas?</a></p></div>
+      <p>Enviá un fotón, una unidad de luz. Acá la «pregunta» se concreta en el montaje: elegís estudiar el camino o la interferencia. Cada clic es un registro. <a href="#wheeler-idea">¿Qué une las tres escenas?</a></p></div>
     {!guided && <div className="dc-explore-tools">
       <button disabled={!ready} onClick={() => act({ type: 'lesson', index: 0 })} data-help-title="Cuatro retos guiados" data-help-body="Hacé una predicción, probala sobre el montaje y comprobá tu explicación. Cada reto guarda sus propias observaciones durante esta visita; podés volver a la exploración libre.">Empezar los cuatro retos →</button>
       <span>{learning.progress.filter(item => item.complete).length}/4 completados</span>

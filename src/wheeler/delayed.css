@@ -1,4 +1,4 @@
-.wd-scene-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; scroll-margin-top: 10px; }
+.wd-scene-nav { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 16px; scroll-margin-top: 10px; }
 .wd-scene-nav a, .wd-next-scene { min-height: 44px; padding: 12px 16px; border: 1px solid var(--wd-line); border-radius: 10px; font-size: 14px; }
 .wd-scene-nav a { display: grid; align-content: start; gap: 5px; }
 .wd-scene-nav a > span { font-size: 11px; color: var(--wd-gold); }
@@ -11,6 +11,7 @@
 .wd-connection p { margin-top: 8px; color: var(--wd-muted); font-size: 14px; line-height: 1.5; }
 .wd-connection strong { color: #e3e9df; }
 .wd-connection .wd-next-scene { margin-top: 12px; }
+.wd-connection .wd-next-scene + .wd-next-scene { margin-left: 8px; }
 .wd-return { padding: 18px; border: 1px solid var(--wd-line); border-radius: 14px; }
 .dc-heading a { color: var(--wd-gold); text-decoration: underline; text-underline-offset: 3px; }
 #juego:focus, #eleccion-retardada:focus, #wheeler-idea:focus, #wheeler-escenas:focus { outline: none; }
@@ -115,6 +116,8 @@
 }
 @media (max-width:650px) {
   .wd-scene-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .wd-scene-nav a:last-child { grid-column: 1 / -1; }
+  .wd-connection .wd-next-scene + .wd-next-scene { margin-left: 0; }
   .wd-scene-nav a { font-size: 12px; padding: 11px 8px; }
   .wd-connection h3 { font-size: 20px; }
   .wd-connection p { font-size: 13px; }

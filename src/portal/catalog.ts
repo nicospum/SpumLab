@@ -177,7 +177,7 @@ export const experiments: readonly Experiment[] = [
     subtitle: 'Cada pregunta abre un camino.',
     question: '¿Qué cambia cuando elegís cómo observar?',
     discovery:
-      'Dos escenas conectadas: el juego de las veinte preguntas y un interferómetro para explorar la elección retardada con fotones individuales.',
+      'Tres escenas conectadas: veinte preguntas, elección retardada y un universo que toma forma al registrar luz, distancias y movimiento.',
     tags: ['Wheeler', 'It from bit', 'Elección retardada'],
     href: '/wheeler/',
   },
