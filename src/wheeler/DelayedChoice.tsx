@@ -103,7 +103,7 @@ export default function DelayedChoice({ active }: { active: boolean }) {
       <p>Enviá un fotón, una unidad de luz. Elegí si sus caminos posibles se reúnen y observá dónde se registra el clic.</p></div>
     {!guided && <div className="dc-explore-tools">
       <button disabled={!ready} onClick={() => act({ type: 'lesson', index: 0 })} data-help-title="Cuatro retos guiados" data-help-body="Hacé una predicción, probala sobre el montaje y comprobá tu explicación. Cada reto guarda sus propias observaciones durante esta visita; podés volver a la exploración libre.">Empezar los cuatro retos →</button>
-      <span>{learning.progress.filter(item => item.complete).length}/4 comprendidos</span>
+      <span>{learning.progress.filter(item => item.complete).length}/4 completados</span>
     </div>}
     {!guided && <div className="dc-timing" aria-label="Momento de la elección">
       <button disabled={!ready} aria-pressed={state.setup.timing === 'before'} onClick={() => dispatch({ type: 'timing', value: 'before' })} data-help-title="Elegir antes de emitir" data-help-body="El divisor de salida se fija al emitir y permanece igual durante ese disparo.">Elegir antes</button>
@@ -122,7 +122,7 @@ export default function DelayedChoice({ active }: { active: boolean }) {
         {[0, 1].map(detector => {
           const clicks = (detector === 0 ? measurement?.d0 : measurement?.d1) ?? 0
           return <div key={detector} className={`dc-detector dc-detector-${detector} ${state.detector === detector ? 'dc-detected' : ''}`}
-          data-help-title={`Detector D${detector}`} data-help-body="Registra clics de fotones individuales. El porcentaje es la probabilidad calculada. El contador reúne detecciones simuladas con esta fase, salida y momento de elección.">
+          data-help-title={`Detector D${detector}`} data-help-body="D significa detector; 0 y 1 identifican los dos detectores. Cada clic registra un fotón. El porcentaje es la probabilidad calculada. El contador reúne detecciones simuladas con esta fase, salida y momento de elección.">
           <strong>D{detector} <span>{Math.round(expected[detector] * 100)}%</span></strong>
           <small>probabilidad</small><b>{clicks} {clicks === 1 ? 'clic' : 'clics'}</b>
         </div>})}

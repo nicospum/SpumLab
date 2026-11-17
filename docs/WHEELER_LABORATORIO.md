@@ -38,6 +38,14 @@ Al reabrir un reto que ya tiene todas sus observaciones, la escena recupera el m
 
 `src/wheeler/challenges.ts` envuelve el motor óptico con la lógica de predicción y evidencia; `DelayedChallenges.tsx` presenta la guía. `tests/wheeler-challenges.test.mjs` comprueba observaciones insuficientes, condiciones incorrectas, opciones correctas e incorrectas de los cuatro retos, independencia del historial previo, disparos repetidos, revisión, navegación y la secuencia tardía. La revisión independiente de ciencia y producto incluye escritorio y tamaños móviles emulados; siguen pendientes Safari y teléfonos físicos.
 
+### Revisión de los retos como primera visita
+
+La revisión de la versión publicada identificó cuatro fricciones: el botón de ayuda rozaba la acción del reto en pantallas bajas; una conclusión anterior ocultaba las instrucciones al repetir o pausar un vuelo; cambiar el montaje dejaba visible una conclusión de otra configuración; y omitir la inserción tardía producía un clic sin explicar por qué la tarjeta del reto quedaba pendiente.
+
+La guía ahora prioriza el viaje en curso. Si la comparación está observada y el visitante cambia a un montaje distinto, muestra un aviso y «Restaurar montaje del reto», conservando predicción, evidencia, logros y conteos. Las dos configuraciones válidas de cada comparación siguen disponibles. Los intentos tardíos que terminan abiertos o empiezan reunidos reciben una explicación específica; para completar el cuarto reto sigue siendo necesario insertar el divisor durante la pausa. Las instrucciones nombran los controles visibles. Las conclusiones definen las amplitudes y explican refuerzo y cancelación; «Reto completado» describe el avance sin afirmar que se haya medido el aprendizaje.
+
+En móvil, el alto del montaje guiado se adapta entre 300 y 350 px a la altura disponible; la fuente mantiene al menos 44 px de área táctil y queda separada del control de fase. La exploración libre conserva su tamaño. Se añadieron cuatro pruebas de regresión sobre conservación de evidencia, restauración y mensajes de los disparos tardíos. La suite del código publicado suma 484 pruebas. Esta evaluación de QA no sustituye una prueba de comprensión con participantes.
+
 ### Modelo y alcance
 
 Con una convención equivalente de divisores 50/50 y fases de reflexión absorbidas en el origen de la fase total, el estado entre divisores es `( |A> + exp(iφ)|B> ) / sqrt(2)`. Recombinarlos produce `P(D0) = (1 + cos φ)/2`, `P(D1) = 1 − P(D0)`. Retirar el segundo divisor produce `P(D0) = P(D1) = 1/2`. El control expresa φ en grados, en pasos de 15°; el cálculo trigonométrico usa radianes.

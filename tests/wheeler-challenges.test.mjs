@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
   LESSONS,
+  comparisonChanged,
   createGuidedState,
   guidedReducer,
   lessonSteps,
@@ -198,12 +199,14 @@ test('lesson four requires a manual early choice and a manual open-to-closed lat
   state = prepare(state)
   assert.deepEqual(state.sim.setup, { phase: 0, closed: false, timing: 'after' })
   state = advance(sim(state, { type: 'emit' }), 'choosing')
-  assert.match(nextInstruction(state), /Insertá el divisor/)
+  assert.match(nextInstruction(state), /«Salida abierta»/)
+  assert.match(nextInstruction(state), /reunir los caminos/)
   assert.equal(lesson(state, 0), state)
   assert.equal(prepare(state), state)
   const duringChoice = state
   state = sim(state, { type: 'closed', value: true })
-  assert.match(nextInstruction(state), /Tocá Continuar/)
+  assert.match(nextInstruction(state), /«Continuar»/)
+  assert.match(nextInstruction(state), /salida quedó reunida/)
   assert.equal(readyToCheck(state), false)
   state = advance(sim(state, { type: 'continue' }), 'detected')
   assert.deepEqual(observed(state), [[1, 0], [1, 0]])
@@ -404,4 +407,85 @@ test('reopening an observed lesson restores its final setup without changing evi
       assert.equal(state.sim.detector, null, 'restoring a setup cannot simulate a detection')
     }
   }
+})
+
+test('changed comparisons distinguish current apparatus from saved evidence without erasing achievements', () => {
+  assert.equal(comparisonChanged(createGuidedState()), false)
+  for (let index = 0; index < LESSONS.length; index++) {
+    let state = predict(lesson(createGuidedState(), index), LESSONS[index].correct)
+    const beforeEvidence = sim(state, { type: 'phase', value: 45 })
+    assert.equal(comparisonChanged(beforeEvidence), false, 'an unfinished comparison is guided by its pending step')
+    if (index === 0) state = manualBefore(state)
+    else if (index === 1 || index === 2) state = batch(prepare(batch(state)))
+    else state = finishAfter(prepare(manualBefore(state)), true)
+    assert.equal(comparisonChanged(state), false)
+    state = check(state)
+    const progress = structuredClone(state.progress)
+    const measurements = structuredClone(state.sim.measurements)
+    state = sim(state, { type: 'phase', value: 45 })
+    assert.equal(comparisonChanged(state), true, `lesson ${index + 1}: a different phase must be identified`)
+    assert.deepEqual(state.progress, progress)
+    assert.deepEqual(state.sim.measurements, measurements)
+    assert.equal(state.progress[index].complete, true)
+    const free = lesson(state, null)
+    assert.equal(comparisonChanged(free), false)
+    state = lesson(state, index)
+    assert.equal(comparisonChanged(state), false, 'restoring the lesson restores an observed configuration')
+    assert.deepEqual(state.progress, progress)
+    assert.deepEqual(state.sim.measurements, measurements)
+  }
+})
+
+test('any observed comparison setting is accepted, including both closed timing variants in lesson four', () => {
+  for (const index of [1, 2]) {
+    let state = predict(lesson(createGuidedState(), index), LESSONS[index].correct)
+    state = batch(prepare(batch(state)))
+    assert.equal(state.progress[index].complete, false)
+    for (const phase of [0, 180]) {
+      state = sim(state, { type: 'phase', value: phase })
+      assert.equal(comparisonChanged(state), false)
+    }
+    state = sim(state, { type: 'closed', value: index === 2 })
+    assert.equal(comparisonChanged(state), true, 'the other output configuration was not this comparison')
+  }
+  let state = predict(lesson(createGuidedState(), 3), 1)
+  state = finishAfter(prepare(manualBefore(state)), true)
+  for (const timing of ['before', 'after']) {
+    state = sim(state, { type: 'timing', value: timing })
+    assert.equal(comparisonChanged(state), false)
+  }
+  state = sim(state, { type: 'closed', value: false })
+  assert.equal(comparisonChanged(state), true, 'the observed late trial finished closed, not open')
+})
+
+test('an unsuccessful late-choice trial explains the missing insertion without granting evidence', () => {
+  let state = predict(lesson(createGuidedState(), 3), 1)
+  state = prepare(manualBefore(state))
+  state = finishAfter(state, null)
+  assert.deepEqual(observed(state), [[1, 0], [0, 0]])
+  assert.match(nextInstruction(state), /clic.*salida abierta/)
+  assert.match(nextInstruction(state), /Repetí.*insertá.*pausa/)
+  state = sim(state, { type: 'closed', value: true })
+  state = finishAfter(state, null)
+  assert.deepEqual(observed(state), [[1, 0], [0, 0]])
+  assert.match(nextInstruction(state), /clic es válido/)
+  assert.match(nextInstruction(state), /empezó.*reunida/)
+  assert.match(nextInstruction(state), /Prepará.*después.*repetí/)
+  state = prepare(state)
+  state = finishAfter(state, true)
+  assert.equal(readyToCheck(state), true)
+  assert.doesNotMatch(nextInstruction(state), /salida abierta|empezó|Repetí/)
+})
+
+test('late-trial feedback does not mislabel batches or a photon emitted open at the wrong phase', () => {
+  let state = predict(lesson(createGuidedState(), 3), 1)
+  state = prepare(manualBefore(state))
+  state = batch(state)
+  assert.equal(state.sim.flight, null)
+  assert.doesNotMatch(nextInstruction(state), /Este clic|empezó/)
+  state = sim(state, { type: 'phase', value: 90 })
+  state = finishAfter(state, true)
+  assert.deepEqual(observed(state), [[1, 0], [0, 0]])
+  assert.doesNotMatch(nextInstruction(state), /empezó.*reunida/)
+  assert.match(nextInstruction(state), /Prepará 0°/)
 })

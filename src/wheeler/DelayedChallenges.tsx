@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef } from 'react'
 import type { Dispatch, RefObject } from 'react'
-import { LESSONS, lessonSteps, nextInstruction, prepareLabel, readyToCheck } from './challenges'
+import { LESSONS, comparisonChanged, lessonSteps, nextInstruction, prepareLabel, readyToCheck } from './challenges'
 import type { GuidedAction, GuidedState } from './challenges'
 import { idle } from './delayed'
 
@@ -19,6 +19,7 @@ export default function DelayedChallenges({ state, act, paused, resultRef }: {
   const predicting = progress.prediction === null
   const completed = progress.feedback === 'complete'
   const wrong = progress.feedback === 'wrong'
+  const changed = comparisonChanged(state)
   const prepare = prepareLabel(state)
   const achievements = state.progress.filter(item => item.complete).length
   const instruction = paused && ['entering', 'leaving'].includes(state.sim.stage)
@@ -52,8 +53,10 @@ export default function DelayedChallenges({ state, act, paused, resultRef }: {
       <small>Elegí una idea y ponela a prueba.</small>
     </div> : <>
       {!completed && <p className="dc-current-idea">Tu idea: <strong>{lesson.options[progress.prediction!]}</strong></p>}
-      <div ref={resultRef} className={`dc-guide-feedback ${wrong ? 'dc-guide-retry' : ''}`} tabIndex={-1} role="status" aria-live="polite" aria-atomic="true">
-        {completed ? <><strong>✓ Reto comprendido · {achievements}/4</strong><p>{lesson.explanation}</p></>
+      <div ref={resultRef} className={`dc-guide-feedback ${ready && !changed && wrong ? 'dc-guide-retry' : ''}`} tabIndex={-1} role="status" aria-live="polite" aria-atomic="true">
+        {!ready ? <p>{instruction}</p>
+          : changed ? <p>Cambiaste el montaje. Las tarjetas conservan la comparación anterior.</p>
+          : completed ? <><strong>✓ Reto completado · {achievements}/4</strong><p>{lesson.explanation}</p></>
           : wrong ? <><strong>Revisá tu idea con lo que observaste.</strong><p>{lesson.hint}</p></>
             : <>{progress.feedback === 'missing' && <strong>Todavía falta observar.</strong>}<p>{instruction}</p></>}
       </div>
@@ -66,7 +69,8 @@ export default function DelayedChallenges({ state, act, paused, resultRef }: {
         </div>)}
       </div>
       <div className="dc-challenge-actions">
-        {completed ? <button disabled={!ready} data-help-title={index < LESSONS.length - 1 ? 'Continuar el recorrido' : 'Volver a la exploración libre'} data-help-body="Conserva tus observaciones y logros. El reto siguiente prepara su propia prueba; la exploración libre permite seguir jugando con el montaje y volver a los retos durante esta visita." onClick={() => {
+        {!ready ? null : changed ? <button onClick={() => { resultRef.current?.focus({ preventScroll: true }); act({ type: 'lesson', index }) }} data-help-title="Volver al montaje observado" data-help-body="Recupera la configuración final de la comparación guardada. No emite fotones ni cambia tus observaciones o logros.">Restaurar montaje del reto</button>
+          : completed ? <button data-help-title={index < LESSONS.length - 1 ? 'Continuar el recorrido' : 'Volver a la exploración libre'} data-help-body="Conserva tus observaciones y logros. El reto siguiente prepara su propia prueba; la exploración libre permite seguir jugando con el montaje y volver a los retos durante esta visita." onClick={() => {
           act({ type: 'lesson', index: index < LESSONS.length - 1 ? index + 1 : null })
         }}>{index < LESSONS.length - 1 ? 'Reto siguiente →' : 'Seguir explorando'}</button>
           : wrong ? <button disabled={!ready} onClick={() => act({ type: 'revise' })} data-help-title="Probar otra explicación" data-help-body="Volvé a elegir una predicción usando las observaciones que ya guardaste. No hace falta repetirlas. Después comprobá de nuevo tu explicación.">Revisar mi idea</button>

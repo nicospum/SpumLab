@@ -1,4 +1,4 @@
-import { createDelayedState, currentMeasurement, delayedReducer, idle, sameSetup } from './delayed.ts'
+import { createDelayedState, currentMeasurement, delayedReducer, effectiveSetup, idle, sameSetup } from './delayed.ts'
 import type { DelayedAction, DelayedState, Setup } from './delayed.ts'
 
 export const LESSONS = [
@@ -7,7 +7,7 @@ export const LESSONS = [
     question: 'Si ves dos trazos, ¿cuántos clics dará un fotón?',
     options: ['Uno en cada detector', 'Uno en total', 'Ningún clic'],
     correct: 1,
-    explanation: 'Los dos trazos son amplitudes de un fotón. Cada disparo termina en un solo clic.',
+    explanation: 'Los trazos son amplitudes de un fotón: permiten calcular probabilidades. Un solo clic.',
     hint: 'Contá los clics añadidos por ese disparo, no los trazos.',
   },
   {
@@ -15,7 +15,7 @@ export const LESSONS = [
     question: 'Con salida reunida, ¿qué cambia de 0° a 180°?',
     options: ['Cambia el detector', 'El reparto queda igual', 'Dos clics por fotón'],
     correct: 0,
-    explanation: 'Al reunir caminos, 0° da D0 y 180° da D1: la fase cambia la interferencia.',
+    explanation: 'Al reunirse, las amplitudes se refuerzan o cancelan: 0° da D0 y 180° da D1.',
     hint: 'Compará qué detector recibió los clics en cada fase.',
   },
   {
@@ -95,6 +95,16 @@ export function lessonSteps(state: GuidedState) {
 
 export function readyToCheck(state: GuidedState) {
   return state.active !== null && idle(state.sim) && state.progress[state.active].prediction !== null && lessonSteps(state).every(step => step.done)
+}
+
+export function comparisonChanged(state: GuidedState): boolean {
+  if (state.active === null || !lessonSteps(state).every(step => step.done)) return false
+  const setup = effectiveSetup(state.sim)
+  return STEPS[state.active].every(step => !sameSetup(setup, {
+    ...step.setup,
+    // Both completed trials in lesson four end with the output inserted.
+    closed: state.active === 3 || step.setup.closed,
+  }))
 }
 
 export function prepareLabel(state: GuidedState): string | null {
@@ -217,11 +227,16 @@ export function nextInstruction(state: GuidedState): string {
   if (progress.prediction === null) return 'Elegí qué pensás que va a pasar antes de emitir.'
   if (state.sim.stage === 'choosing') {
     if (lesson === 3 && state.tracking?.step === 1)
-      return state.sim.setup.closed ? 'Ya insertaste la salida después de entrar. Tocá Continuar para registrar el clic.' : 'El fotón ya entró. Insertá el divisor de salida y después tocá Continuar.'
+      return state.sim.setup.closed ? 'La salida quedó reunida. Tocá «Continuar».' : 'Tocá «Salida abierta» para reunir los caminos. Después, «Continuar».'
     return 'Elegí la salida y tocá Continuar para terminar este disparo. Después podés preparar el paso del reto.'
   }
   if (!idle(state.sim)) return 'Seguí este fotón hasta el detector. El reto registra el clic al terminar el viaje.'
   const steps = lessonSteps(state)
+  const flight = state.sim.flight
+  if (lesson === 3 && !steps[1].done && state.sim.stage === 'detected' && flight?.timing === 'after') {
+    if (!flight.closed) return 'Este clic fue con salida abierta. Repetí e insertá el divisor durante la pausa.'
+    if (flight.phase === 0) return 'El clic es válido, pero empezó con la salida reunida. Prepará la elección después y repetí.'
+  }
   const pending = steps.findIndex(step => !step.done)
   if (pending < 0) {
     if (progress.feedback === 'wrong') return `Probá otra explicación. ${LESSONS[lesson].hint}`
