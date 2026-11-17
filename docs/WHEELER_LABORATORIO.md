@@ -6,6 +6,8 @@ Primera escena del laboratorio independiente `/wheeler/`, incorporado al catálo
 
 El visitante toca preguntas o figuras para reducir un conjunto de 16 posibilidades. Puede volver una pregunta atrás o elegir cualquier respuesta en «Mis caminos». Al hacer otra pregunta desde ese punto conserva ambas ramas para compararlas.
 
+Tocar una figura descartada muestra la pregunta y respuesta que la excluyeron. «Volver antes de esa respuesta» recupera el último estado de ese recorrido donde la figura seguía siendo posible. El historial identifica cada paso mediante su pregunta y la respuesta anterior.
+
 - **Sorpresa** empieza con todas las posibilidades. Cada respuesta mantiene al menos una compatible con el registro completo de la rama. Si sí y no son posibles, una moneda pseudoaleatoria reproducible decide la respuesta. Si solo una respuesta es compatible, queda obligada.
 - **Palabra elegida** fija un objeto al iniciar la partida y responde según sus propiedades. Volver atrás conserva ese objeto.
 - Cada rama admite hasta veinte preguntas y termina antes si queda una sola palabra. Repetir una pregunta desde el mismo punto recupera el resultado guardado.
@@ -35,9 +37,9 @@ El juego funciona en el cliente con React y CSS. Las respuestas proceden del mot
 
 ## Uso en celular y accesibilidad
 
-En pantallas angostas aparecen dos preguntas sugeridas junto al conjunto de figuras. «Otras preguntas» permite elegir las restantes. Tocar una figura muestra su descripción y permite preguntar por su nombre. El botón de retroceso y el historial permanecen debajo del espacio de juego.
+En pantallas angostas aparecen dos preguntas sugeridas junto al conjunto de figuras. «Otras preguntas» reemplaza las sugerencias por un selector compacto y permite elegir las restantes. Al agotarse las propiedades, siguen disponibles las preguntas por nombre. Tocar una figura muestra su descripción y permite preguntar por su nombre. El botón de retroceso y el historial permanecen debajo del espacio de juego.
 
-Al responder, el encuadre vuelve al espacio de juego si hace falta. El resultado recibe el foco para continuar con teclado cuando desaparece la pregunta anterior. Hay etiquetas accesibles, estado de botones, foco visible, anuncio de resultados y descripciones mediante «Modo ayuda».
+Al responder, cambiar de regla, reiniciar o abrir una descripción, el encuadre vuelve al espacio de juego si hace falta. El resultado recibe el foco al cambiar de estado, incluso cuando se vuelve al inicio. Cerrar una descripción devuelve el foco a la figura. El modo activo aparece junto a las posibilidades para reconocerlo mientras se juega. Hay etiquetas accesibles, estado de botones, foco visible, anuncio de resultados y descripciones mediante «Modo ayuda».
 
 ## Verificación
 
@@ -48,3 +50,7 @@ Un agente científico independiente contrastó 12.000 estados y completó ambas 
 La revisión del 17 de noviembre de 2026 pasó 453 pruebas del código publicado, lint y compilación de las 27 entradas. En navegador se comprobó una rama completa de veinte preguntas, su bloqueo al llegar al límite y el regreso a la pregunta diecinueve para resolver por otro camino. Los encuadres de 320 × 700 y 390 × 844 se revisaron con escena, respuestas y controles visibles. El texto al inspeccionar una figura en el límite indica cómo continuar desde un punto anterior.
 
 Las pruebas móviles usan tamaños de pantalla emulados. Safari, teléfonos físicos y evaluación de aprendizaje con participantes quedan pendientes de acceso y de una sesión específica.
+
+## Revisión de claridad y navegación
+
+Dos agentes independientes revisaron nuevamente código, explicación y uso de la versión publicada. Se reprodujeron un selector vacío al agotar las propiedades, acciones del formulario y la inspección por debajo del visor móvil, y pérdida del foco y del encuadre tras reiniciar o cambiar a una partida en su inicio. Las correcciones se acompañaron de una explicación explícita del guardado automático, la identificación de la respuesta que descarta cada figura y un historial con relaciones expresadas mediante las preguntas.
