@@ -137,7 +137,7 @@ export default function App() {
             <div className="wd-console">
               <div className="wd-feedback" ref={feedback} tabIndex={-1} role="status" aria-live="polite" aria-atomic="true">
                 {lastQuestion ? <><span>{lastQuestion}</span><strong className={node.answer ? 'wd-yes' : 'wd-no'}>{node.answer ? 'Sí' : 'No'}</strong>
-                  <p>{eliminated ? `Quedan ${node.candidates.length} de las ${parent!.candidates.length} posibilidades anteriores.` : 'La respuesta ya se deducía del registro. Siguen las mismas posibilidades.'}</p></>
+                  <p>{eliminated ? `${finished ? 'Queda' : 'Quedan'} ${node.candidates.length} de las ${parent!.candidates.length} posibilidades anteriores.` : 'La respuesta ya se deducía del registro. Siguen las mismas posibilidades.'}</p></>
                   : <><strong>Elegí tu primera pregunta.</strong><p>Tenés hasta veinte. También podés tocar una figura y preguntar por su nombre.</p></>}
                 {message && <p className="wd-notice">{message}</p>}
               </div>
