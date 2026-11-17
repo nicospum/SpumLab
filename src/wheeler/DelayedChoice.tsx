@@ -56,6 +56,9 @@ export default function DelayedChoice({ active }: { active: boolean }) {
     if (!active || initialStage.current === state.stage) return
     initialStage.current = state.stage
     if (['#wheeler-idea', '#wheeler-escenas'].includes(location.hash) && !viewport.current?.contains(document.activeElement)) return
+    const bounds = viewport.current?.getBoundingClientRect()
+    // Advancing a photon must not pull someone back after they scroll to read.
+    if (bounds && (bounds.bottom <= 0 || bounds.top >= window.innerHeight)) return
     if (state.stage === 'choosing') splitter.current?.focus({ preventScroll: true })
     if (state.stage === 'detected') (guided ? guideResult.current : status.current)?.focus({ preventScroll: true })
     if (state.stage === 'entering' || state.stage === 'leaving') pause.current?.focus({ preventScroll: true })
@@ -66,9 +69,11 @@ export default function DelayedChoice({ active }: { active: boolean }) {
   useLayoutEffect(() => {
     if (!active || !guided || !viewport.current) return
     if (['#wheeler-idea', '#wheeler-escenas'].includes(location.hash) && !viewport.current.contains(document.activeElement)) return
+    const bounds = viewport.current.getBoundingClientRect()
+    // Starting the guide is explicit; later automatic updates respect reading.
+    if (wasGuided.current && (bounds.bottom <= 0 || bounds.top >= window.innerHeight)) return
     const target = guideResult.current ?? viewport.current.querySelector<HTMLButtonElement>('.dc-prediction-options button')
     target?.focus({ preventScroll: true })
-    const bounds = viewport.current.getBoundingClientRect()
     if (bounds.top < 0 || bounds.bottom > window.innerHeight - 64)
       viewport.current.scrollIntoView({ block: 'start', behavior: 'instant' })
   }, [active, guided, learning.active, progress?.prediction, progress?.feedback])
@@ -112,7 +117,7 @@ export default function DelayedChoice({ active }: { active: boolean }) {
       <button disabled={!ready} aria-pressed={state.setup.timing === 'after'} onClick={() => dispatch({ type: 'timing', value: 'after' })} data-help-title="Elegir después de entrar" data-help-body="El viaje se pausa después del primer divisor. Podés insertar o retirar el divisor de salida antes de continuar hacia los detectores.">Elegir después</button>
     </div>}
 
-    <div className={`dc-workspace ${guided ? 'dc-guided' : ''}`} ref={viewport}>
+    <div className={`dc-workspace ${guided ? 'dc-guided' : ''}`} ref={viewport} data-resume={state.stage !== 'ready' || state.measurements.length > 0}>
       <div className="dc-apparatus">
       <div className="dc-board spum-live-stage" aria-label="Interferómetro de dos caminos">
         <DelayedBoard state={state} active={active} />
@@ -130,7 +135,7 @@ export default function DelayedChoice({ active }: { active: boolean }) {
         </div>})}
         <button ref={splitter} className={`dc-splitter ${setup.closed ? 'dc-closed' : ''} ${choosing ? 'dc-choose-now' : ''}`}
           disabled={!canChoose(state)} aria-pressed={setup.closed}
-          aria-label={setup.closed ? 'Retirar divisor de salida' : 'Insertar divisor de salida'}
+          aria-label={setup.closed ? 'Salida reunida: retirar divisor de salida' : 'Salida abierta: insertar divisor de salida'}
           onClick={() => dispatch({ type: 'closed', value: !state.setup.closed })}
           data-help-title="Divisor de salida" data-help-body="Insertado, combina las amplitudes de ambos brazos y permite interferencia. Retirado, cada detector identifica un brazo. Los dos detectores están activos en ambos casos.">
           <span aria-hidden="true">{setup.closed ? '◇' : '⋮'}</span><strong>{setup.closed ? 'Salida reunida' : 'Salida abierta'}</strong>

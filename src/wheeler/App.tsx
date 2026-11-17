@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import type { FormEvent } from 'react'
+import type { FormEvent, MouseEvent } from 'react'
 import { MoreLabs } from '../components/ui/LabJourney'
 import { ask, createGame, current, LIMIT, matches, pathTo, QUESTIONS, questionText, revisit, WORLDS } from './game'
 import type { Game, Mode, WorldId } from './game'
@@ -7,11 +7,17 @@ import DelayedChoice from './DelayedChoice'
 
 const fresh = (mode: Mode) => createGame(mode, crypto.getRandomValues(new Uint32Array(1))[0])
 const UniverseScene = lazy(() => import('./UniverseScene'))
+const SCENE_RETURN = {
+  questions: { href: '#juego', label: 'Volver a las veinte preguntas' },
+  delayed: { href: '#eleccion-retardada', label: 'Volver a la elección retardada' },
+  universe: { href: '#universo-que-responde', label: 'Volver al universo que responde' },
+}
 
 export default function App() {
   const [scene, setScene] = useState<'questions' | 'delayed' | 'universe'>(() => location.hash === '#universo-que-responde' ? 'universe' : location.hash === '#eleccion-retardada' ? 'delayed' : 'questions')
   const [universeVisited, setUniverseVisited] = useState(scene === 'universe')
   const [anchor, setAnchor] = useState(() => location.hash)
+  const [frameRequest, setFrameRequest] = useState(0)
   const framedAnchor = useRef<string | null>(null)
   const [games, setGames] = useState<Record<Mode, Game>>(() => ({ surprise: fresh('surprise'), fixed: fresh('fixed') }))
   const [mode, setMode] = useState<Mode>('surprise')
@@ -69,18 +75,31 @@ export default function App() {
       framedAnchor.current = anchor
       if (!['#eleccion-retardada', '#universo-que-responde', '#juego', '#wheeler-idea', '#wheeler-escenas'].includes(anchor)) return
       const section = document.getElementById(anchor.slice(1))
-      const guided = anchor === '#eleccion-retardada' ? section?.querySelector<HTMLElement>('.dc-guided') : null
+      const delayed = anchor === '#eleccion-retardada' ? section?.querySelector<HTMLElement>('.dc-guided, .dc-workspace[data-resume="true"]') : null
       const universe = anchor === '#universo-que-responde' ? section?.querySelector<HTMLElement>('.wu-guided') : null
       const resumeQuestions = anchor === '#juego' && game.nodes.length > 1
-      const target = universe ?? guided ?? (resumeQuestions ? playfield.current : section)
-      const focusTarget = guided
-        ? guided.querySelector<HTMLElement>('.dc-choose-now, .dc-pause') ?? guided.querySelector<HTMLElement>('[role="status"], .dc-prediction-options button')
+      const target = universe ?? delayed ?? (resumeQuestions ? playfield.current : section)
+      const focusTarget = delayed
+        ? delayed.querySelector<HTMLElement>('.dc-choose-now, .dc-pause') ?? delayed.querySelector<HTMLElement>('[role="status"], .dc-prediction-options button')
         : universe ?? (resumeQuestions ? feedback.current : section)
       focusTarget?.focus({ preventScroll: true })
       target?.scrollIntoView({ block: 'start', behavior: 'instant' })
     })
     return () => cancelAnimationFrame(frame)
-  }, [scene, anchor, game.nodes.length])
+  }, [scene, anchor, game.nodes.length, frameRequest])
+
+  function resumeSameAnchor(event: MouseEvent<HTMLDivElement>) {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+    const link = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>('a[href]') : null
+    const href = link?.getAttribute('href')
+    if (!link || link.target === '_blank' || link.hasAttribute('download') || href !== location.hash ||
+      !['#juego', '#eleccion-retardada', '#universo-que-responde', '#wheeler-idea', '#wheeler-escenas'].includes(href ?? '')) return
+    // Native same-hash links do not emit hashchange. Resume the workspace even
+    // after manual scrolling, while preserving new-tab and modified clicks.
+    event.preventDefault()
+    framedAnchor.current = null
+    setFrameRequest(value => value + 1)
+  }
 
   useLayoutEffect(() => {
     const gameChanged = previousGame.current !== game
@@ -128,7 +147,7 @@ export default function App() {
     inspectedButton.current?.focus({ preventScroll: true })
   }
   return (
-    <div className="wd-shell">
+    <div className="wd-shell" onClick={resumeSameAnchor}>
       <header className="wd-header">
         <a href="/" className="wd-brand">∿ SPUM</a>
         <nav aria-label="Wheeler"><a href="#wheeler-escenas">Escenas</a><a href="#wheeler-idea">La idea de Wheeler</a></nav>
@@ -150,6 +169,7 @@ export default function App() {
         </section>
 
         <nav id="wheeler-escenas" className="wd-scene-nav" tabIndex={-1} aria-label="Escenas del laboratorio de Wheeler">
+          <p className="wd-scene-intro">Tres escenas, una pregunta: <strong>¿qué podemos conocer a partir de lo registrado?</strong> Cada actividad conserva su propio recorrido.</p>
           <a href="#juego" aria-current={scene === 'questions' ? 'page' : undefined}><span>1 · Analogía clásica</span><strong>El mundo sin elegir</strong><small>Preguntas → respuestas sí/no</small></a>
           <a href="#eleccion-retardada" aria-current={scene === 'delayed' ? 'page' : undefined}><span>2 · Modelo cuántico</span><strong>Elección retardada</strong><small>Montaje → clics en detectores</small></a>
           <a href="#universo-que-responde" aria-current={scene === 'universe' ? 'page' : undefined}><span>3 · Metáfora explorable</span><strong>El universo que responde</strong><small>Registros → un mapa del mundo</small></a>
@@ -273,13 +293,20 @@ export default function App() {
         <div hidden={scene !== 'universe'}>{universeVisited && <Suspense fallback={<p role="status">Preparando el universo…</p>}><UniverseScene active={scene === 'universe'} /></Suspense>}</div>
 
         <section id="wheeler-idea" className="wd-reading" tabIndex={-1} aria-labelledby="wd-idea-title">
-          <div><p className="wd-eyebrow">EL HILO ENTRE LAS TRES ESCENAS</p><h2 id="wd-idea-title">De las preguntas<br />a un mundo registrado.</h2></div>
+          <div><p className="wd-eyebrow">EL HILO ENTRE LAS TRES ESCENAS</p><h2 id="wd-idea-title">De las preguntas<br />a un mundo registrado.</h2><a className="wd-resume-scene" href={SCENE_RETURN[scene].href}>← {SCENE_RETURN[scene].label}</a></div>
           <div>
-            <p>En las dos primeras escenas elegís una pregunta y obtenés un registro. En el juego, la pregunta es una frase; en el experimento, se concreta en un aparato. La analogía invita a pensar en esa relación; el modelo cuántico permite calcular probabilidades de detección.</p>
-            <p>En «El universo que responde» llevás esa pregunta a un mapa explorable: cada consulta añade una propiedad a su representación. Es una metáfora visual para comparar reglas del juego, no una demostración de que observar cree materia.</p>
+            <p>Elegís qué preguntar y guardás una respuesta. Ese <strong>registro</strong> es lo que podés consultar y comparar después. Así aparece en cada escena:</p>
+            <ol className="wd-thread">
+              <li><span>1 · Analogía clásica</span><h3>El mundo sin elegir</h3><p>Preguntás sobre las figuras y guardás un sí o un no. Las respuestas van acotando las posibilidades.</p><a href="#juego">Probá otra pregunta desde el mismo punto →</a></li>
+              <li><span>2 · Modelo cuántico</span><h3>Elección retardada</h3><p>Insertás o retirás la pieza de salida y los detectores registran clics. La forma de medir determina qué información obtenés.</p><a href="#eleccion-retardada">Compará los clics al reunir o separar los caminos →</a></li>
+              <li><span>3 · Metáfora explorable</span><h3>El universo que responde</h3><p>Consultás luz, distancia o movimiento. Las respuestas forman el mapa; un mismo dato puede encajar con reglas diferentes.</p><a href="#universo-que-responde">Observá Alba con Luz bajo las dos reglas →</a></li>
+            </ol>
+            <p>El hilo común es preguntar y conservar una respuesta. La segunda escena calcula las predicciones de un experimento cuántico; las otras ayudan a pensar la idea de Wheeler. No demuestran que observar cree materia.</p>
+            <details><summary>La anécdota de las veinte preguntas</summary>
             <p>Wheeler contó una partida de veinte preguntas en la que terminó adivinando «nube». Sus amigos entonces revelaron la sorpresa. Habían decidido responder sin ponerse de acuerdo previamente en una palabra. Cada respuesta tenía que ser compatible con alguna palabra y con todas las respuestas anteriores.</p>
             <p>En esta adaptación podés ver y tocar las posibilidades. En Sorpresa, el programa sortea entre sí y no cuando ambas respuestas son compatibles. Si solo una lo es, la respuesta queda obligada. En Palabra elegida, el objeto se fija al empezar.</p>
             <p>Un mismo registro puede encajar con las dos reglas. Volver atrás te permite comparar recorridos alternativos. Tus elecciones y las respuestas del juego participan en el resultado.</p>
+            </details>
             <details><summary>¿Qué quiso decir Wheeler con «it from bit»?</summary>
               <p>Wheeler propuso como hipótesis de trabajo que la información obtenida mediante preguntas físicas y registros podría ser fundamental para lo que llamamos realidad. En un experimento, una pregunta se concreta en un aparato y su respuesta en un registro.</p>
               <p>«El mundo sin elegir» es una analogía clásica con objetos y atributos definidos. La escena de elección retardada calcula las predicciones de un interferómetro cuántico ideal. El universo participativo sigue siendo una propuesta interpretativa, cuyo alcance va más allá de lo que prueban estas actividades.</p>
@@ -291,6 +318,7 @@ export default function App() {
               <a href="https://heyredhat.github.io/refs/wheeler_law_without_law.pdf" target="_blank" rel="noreferrer">Wheeler · Law Without Law (1983), pp. 201–203 ↗</a>
               <a href="https://scienceplusplus.org/visions/assets/Wheeler1989.pdf" target="_blank" rel="noreferrer">Wheeler · Information, Physics, Quantum (1989), §§19.2 y 19.4 ↗</a>
             </div>
+            <a className="wd-resume-scene" href={SCENE_RETURN[scene].href}>← {SCENE_RETURN[scene].label}</a>
           </div>
         </section>
         <MoreLabs current="wheeler" />

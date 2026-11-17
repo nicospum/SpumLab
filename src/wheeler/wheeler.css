@@ -114,6 +114,17 @@ p { line-height: 1.6; }
 .wd-reading p { margin-bottom: 18px; color: #b9c9d0; font-size: 16px; }
 .wd-reading details { border-top: 1px solid var(--wd-line); margin-bottom: 20px; }
 .wd-reading summary { min-height: 44px; padding-block: 14px; color: var(--wd-gold); }
+.wd-scene-intro { grid-column:1 / -1; font-size:13px; color:var(--wd-muted); margin:0 0 6px; }
+.wd-scene-intro strong { color:#e7ede7; font-weight:500; }
+.wd-resume-scene { display:inline-flex; align-items:center; min-height:44px; margin-top:12px; padding:8px 12px; border:1px solid var(--wd-line); border-radius:8px; color:var(--wd-gold); font-size:13px; }
+.wd-thread { display:grid; gap:12px; list-style:none; padding:0; margin:18px 0; }
+.wd-thread li { border:1px solid var(--wd-line); border-left:3px solid var(--wd-aqua); padding:14px; border-radius:10px; background:#10212e; }
+.wd-thread li:nth-child(2) { border-left-color:var(--wd-gold); }
+.wd-thread li:nth-child(3) { border-left-color:#bca1ff; }
+.wd-thread li > span { font-size:11px; color:var(--wd-gold); }
+.wd-thread h3 { font:21px/1.3 Georgia,serif; margin:5px 0 8px; }
+.wd-thread li p { font-size:14px; margin-bottom:4px; }
+.wd-thread li a { display:flex; align-items:center; min-height:44px; color:var(--wd-aqua); font-size:13px; text-decoration:underline; text-underline-offset:3px; }
 .wd-sources { display: grid; gap: 8px; font-size: 13px; }
 .wd-sources a { min-height: 44px; text-decoration: underline; text-underline-offset: 4px; display: flex; align-items: center; }
 .wd-footer { display: flex; justify-content: space-between; gap: 24px; padding-block: 25px 80px; margin-top: 20px; font-size: 13px; color: var(--wd-muted); }
