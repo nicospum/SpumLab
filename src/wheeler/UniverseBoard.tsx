@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { registerSceneHelp } from '../education/sceneHelp'
 import { REGIONS } from './universe'
+import { layoutUniverseLabels } from './universeLayout'
 import type { Tool } from './universe'
 
 type Values = Partial<Record<Tool, boolean>>[]
@@ -91,13 +92,15 @@ export default function UniverseBoard(props: Props) {
       return { region, group, body, material, atmosphere, haze, rings, wire, moon, trail, particles, amount: 0 }
     })
     const reduced = matchMedia('(prefers-reduced-motion: reduce)')
-    let width = 1, height = 1, frame = 0, previous = 0, phase = 0, pulseAge = 5, lastSerial = latest.current.serial, inView = true
+    let width = 1, height = 1, labelWidth = 64, labelHeight = 58, frame = 0, previous = 0, phase = 0, pulseAge = 5, lastSerial = latest.current.serial, inView = true
     const visibility = new IntersectionObserver(entries => { inView = entries[0].isIntersecting })
     visibility.observe(container)
     const projected = objects.map(() => ({ x: 0, y: 0 }))
     const resize = new ResizeObserver(() => {
       width = container.clientWidth; height = container.clientHeight
       if (!width || !height) return
+      const labelBounds = labels.current[0]?.getBoundingClientRect()
+      if (labelBounds?.width && labelBounds.height) { labelWidth = labelBounds.width; labelHeight = labelBounds.height }
       renderer.setSize(width, height, false)
       camera.aspect = width / height; camera.updateProjectionMatrix()
     })
@@ -142,20 +145,16 @@ export default function UniverseBoard(props: Props) {
       })
       starsMaterial.opacity = Math.min(.65, revealed * .11)
       scene.updateMatrixWorld(true)
-      const placed: { x: number; y: number }[] = []
       objects.forEach((object, id) => {
         object.group.getWorldPosition(point); point.project(camera)
         const x = (point.x * .5 + .5) * width, y = (-point.y * .5 + .5) * height
         projected[id] = { x, y }
+      })
+      const positions = layoutUniverseLabels(projected.map(({ x, y }) => ({ x, y, visible: x > 15 && x < width - 15 && y > 25 && y < height - 30 })), width, height, { width: labelWidth, height: labelHeight })
+      objects.forEach((_, id) => {
+        const { x, y } = projected[id]
+        const { x: labelX, y: labelY, visible } = positions[id]
         const label = labels.current[id]
-        const visible = x > 15 && x < width - 15 && y > 25 && y < height - 30
-        const labelX = THREE.MathUtils.clamp(x, 30, width - 30)
-        let labelY = THREE.MathUtils.clamp(y, 78, height - 55)
-        for (const shift of [0, -52, 52, -104, 104]) {
-          const candidate = THREE.MathUtils.clamp(y + shift, 78, height - 55)
-          if (!placed.some(p => Math.abs(p.x - labelX) < 56 && Math.abs(p.y - candidate) < 49)) { labelY = candidate; break }
-        }
-        if (visible) placed.push({ x: labelX, y: labelY })
         if (label) {
           const left = `${labelX.toFixed(1)}px`, top = `${labelY.toFixed(1)}px`, display = visible ? 'visible' : 'hidden'
           if (label.style.left !== left) label.style.left = left
@@ -168,7 +167,7 @@ export default function UniverseBoard(props: Props) {
             const rounded = value.toFixed(1)
             if (leader.getAttribute(key) !== rounded) leader.setAttribute(key, rounded)
           }
-          const opacity = visible && Math.abs(y - labelY) > 5 ? '0.4' : '0'
+          const opacity = visible && Math.hypot(x - labelX, y - labelY) > 5 ? '0.4' : '0'
           if (leader.style.opacity !== opacity) leader.style.opacity = opacity
         }
       })
@@ -240,7 +239,13 @@ export default function UniverseBoard(props: Props) {
         const materials = Array.isArray(renderable.material) ? renderable.material : [renderable.material]
         materials.forEach(material => material?.dispose())
       })
-      glowTexture.dispose(); renderer.dispose()
+      glowTexture.dispose()
+      // The canvas survives scene navigation. CanvasTexture uploads leave these
+      // flags set; a new renderer's placeholder 3D textures require them cleared.
+      const gl = renderer.getContext()
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false)
+      gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false)
+      renderer.dispose()
     }
   }, [props.active])
 

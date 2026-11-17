@@ -18,28 +18,28 @@ export const LESSONS = [
     title: 'Encendé un rincón', task: 'Con Luz, observá Alba.',
     prompt: 'Después de observar Alba, ¿qué podés afirmar?',
     options: ['Ahora tengo un registro', 'Demostré que antes no existía', 'Elegí la respuesta'], correct: 0,
-    success: 'La oscuridad indica lo que falta registrar. La aparición del astro es una metáfora visual: no demuestra que mirar cree materia.',
+    success: 'Un bit representa un sí/no (1 o 0). Con esas respuestas el mapa toma forma. Es una metáfora: no demuestra que mirar cree materia.',
     hint: 'Pensá en qué sabe el mapa antes de tu primera observación, no en qué existe en el universo real.',
   },
   {
     title: 'Separá las distancias', task: 'Con Distancia, observá Alba y Eco.',
     prompt: '¿Cerca en la imagen significa cerca en el espacio?',
     options: ['Siempre', 'No: falta conocer la profundidad', 'El más brillante está más cerca'], correct: 1,
-    success: 'Alba está cerca y Eco lejos en este modelo. Una dirección parecida en la imagen puede ocultar una separación en profundidad.',
+    success: 'En la prueba registraste Alba cerca y Eco lejos. Una dirección parecida en la imagen puede ocultar una separación en profundidad.',
     hint: 'Compará los registros «cerca» y «lejos», además de dónde aparecen los puntos en la imagen.',
   },
   {
     title: 'El registro deja huella', task: 'Con Luz: observá Alba, después Eco y volvé a observar Alba.',
     prompt: 'Al volver a Alba, ¿qué conserva este juego?',
-    options: ['Borra lo que no miro', 'Sortea todo otra vez', 'Los registros de esta rama'], correct: 2,
-    success: 'El registro de Alba se conservó. El juego mantiene las respuestas de esta rama aunque explores otra región.',
-    hint: 'Volver a observar una propiedad registrada consulta la misma respuesta. Probar otra rama es una acción diferente.',
+    options: ['Borra lo que no miro', 'Sortea todo otra vez', 'Las respuestas de este recorrido'], correct: 2,
+    success: 'La respuesta de Alba se conservó al ir a Eco y volver. El juego mantiene lo registrado aunque explores otra región.',
+    hint: 'Volver a observar recupera la misma respuesta guardada. Deshacer una consulta y abrir otro camino es una acción diferente.',
   },
   {
     title: '¿Descubrir o completar?', task: 'Observá Alba con Luz en «Al preguntar» y en «Desde el inicio».',
     prompt: 'Las dos reglas dieron Sí. ¿Qué permite concluir?',
     options: ['La realidad se crea al mirar', 'Esta respuesta no las distingue', 'Las reglas son idénticas'], correct: 1,
-    success: 'El mismo registro puede encajar con las dos reglas de este juego. La comparación ilustra una pregunta de Wheeler; no decide cómo se origina el universo real.',
+    success: 'Una misma respuesta encaja con dos reglas. Distinguirlas requiere una prueba que dé resultados diferentes. Esto no decide cómo se origina el universo real.',
     hint: 'Ambas reglas registraron que Alba emite luz. Ese dato por sí solo no revela cómo lo decidió el programa.',
   },
 ] as const
@@ -96,6 +96,7 @@ export type UniverseAction =
   | { type: 'undo' }
   | { type: 'revisit'; id: number }
   | { type: 'lesson'; index: number | null }
+  | { type: 'repeat-lesson' }
   | { type: 'answer'; index: number }
   | { type: 'check' }
 
@@ -189,7 +190,9 @@ function recordEvidence(state: UniverseState, observation: UniverseObservation):
   if (index === 3 && region === 0 && tool === 'light') evidence.add(`compare-${mode}`)
   return state.progress.map((item, lesson) => lesson === index ? {
     ...item, evidence: [...evidence], returnVisit,
-    feedback: previous.complete ? 'correct' : 'none',
+    // A prior achievement is historical. Only an explicit check can approve
+    // the currently chosen explanation, including during a repeat attempt.
+    feedback: 'none',
   } : item)
 }
 
@@ -231,7 +234,7 @@ export function universeReducer(state: UniverseState, action: UniverseAction): U
   switch (action.type) {
     case 'select-region': return validRegion(action.region) ? { ...state, region: action.region, notice: '' } : state
     case 'tool': return validTool(action.tool) ? { ...state, tool: action.tool, notice: '' } : state
-    case 'mode': return validMode(action.mode) ? { ...state, mode: action.mode, last: null, notice: 'Cada regla conserva su propio mapa y sus recorridos durante esta visita.' } : state
+    case 'mode': return validMode(action.mode) ? { ...state, mode: action.mode, last: null, notice: action.mode === 'forming' ? 'El juego completa respuestas al consultar. Esta regla conserva su propio mapa.' : 'El juego ya preparó las respuestas; sólo ves las consultadas. Esta regla tiene su propio mapa.' } : state
     case 'observe': return observe(state)
     case 'undo': {
       const parent = currentUniverse(state).parent
@@ -244,7 +247,7 @@ export function universeReducer(state: UniverseState, action: UniverseAction): U
         ...state, worlds: { ...state.worlds, [state.mode]: { ...world, active: action.id } }, last: null,
         notice: 'Volviste a este punto del juego. Los otros recorridos siguen guardados; ahora podés hacer otra pregunta.',
         // Rewinding the simulation is not evidence of leaving and revisiting a region.
-        progress: state.progress.map((item, i) => i === 2 && !item.complete ? {
+        progress: state.progress.map((item, i) => i === 2 && item.feedback !== 'correct' ? {
           ...item, evidence: [], returnVisit: null, feedback: 'none',
         } : item),
       }
@@ -254,6 +257,17 @@ export function universeReducer(state: UniverseState, action: UniverseAction): U
       return {
         ...state, lesson: action.index, notice: '',
         ...(action.index === null ? {} : { region: 0, tool: action.index === 1 ? 'distance' as const : 'light' as const }),
+      }
+    }
+    case 'repeat-lesson': {
+      const index = state.lesson
+      if (index === null) return state
+      return {
+        ...state, region: 0, tool: index === 1 ? 'distance' : 'light', last: null,
+        notice: 'Nuevo intento: repetí las consultas. Tu logro anterior queda guardado.',
+        progress: state.progress.map((item, i) => i === index ? {
+          ...item, evidence: [], answer: null, feedback: 'none', returnVisit: null,
+        } : item),
       }
     }
     case 'answer': {

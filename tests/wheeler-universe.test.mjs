@@ -232,6 +232,66 @@ test('switching lessons and exploration keeps progress but unrelated observation
   assert.equal(state.progress[0], progress)
 })
 
+test('repeating each completed challenge clears the attempt but preserves the achievement and maps', () => {
+  for (let lesson = 0; lesson < 4; lesson++) {
+    let state = act(createUniverse(77), 'lesson', { index: lesson })
+    state = completeEvidence(state, lesson)
+    state = act(act(state, 'answer', { index: LESSONS[lesson].correct }), 'check')
+    assert.equal(state.progress[lesson].complete, true)
+    state = act(state, 'lesson', { index: null })
+    state = act(state, 'revisit', { id: 0 })
+    state = act(state, 'lesson', { index: lesson })
+    const mapsBefore = state.worlds
+    state = act(state, 'repeat-lesson')
+    assert.equal(state.worlds, mapsBefore, 'Starting a repeat must not alter either map or its branches')
+    assert.equal(state.progress[lesson].complete, true, 'The previous achievement remains earned')
+    assert.deepEqual(state.progress[lesson].evidence, [])
+    assert.equal(state.progress[lesson].answer, null)
+    assert.equal(state.progress[lesson].feedback, 'none')
+    assert.equal(state.progress[lesson].returnVisit, null)
+    assert.equal(lessonEvidence(state, lesson).ready, false)
+    assert.equal(state.region, 0)
+    assert.equal(state.tool, lesson === 1 ? 'distance' : 'light')
+    state = act(act(state, 'answer', { index: LESSONS[lesson].correct }), 'check')
+    assert.equal(state.progress[lesson].feedback, 'missing')
+    state = completeEvidence(state, lesson)
+    assert.equal(state.progress[lesson].feedback, 'none', 'Observing cannot approve an explanation automatically')
+    state = act(state, 'check')
+    assert.equal(state.progress[lesson].feedback, 'correct')
+  }
+})
+
+test('a past achievement never auto-approves a newly incorrect answer when observing again', () => {
+  for (let lesson = 0; lesson < 4; lesson++) {
+    let state = act(createUniverse(8), 'lesson', { index: lesson })
+    state = completeEvidence(state, lesson)
+    state = act(act(state, 'answer', { index: LESSONS[lesson].correct }), 'check')
+    state = act(state, 'answer', { index: (LESSONS[lesson].correct + 1) % 3 })
+    state = completeEvidence(state, lesson)
+    assert.equal(state.progress[lesson].complete, true)
+    assert.equal(state.progress[lesson].feedback, 'none')
+    state = act(state, 'check')
+    assert.equal(state.progress[lesson].feedback, 'incorrect')
+  }
+})
+
+test('repeating the return challenge still invalidates its fresh sequence on rewind', () => {
+  let state = act(createUniverse(9), 'lesson', { index: 2 })
+  state = completeEvidence(state, 2)
+  state = act(act(state, 'answer', { index: LESSONS[2].correct }), 'check')
+  state = act(state, 'repeat-lesson')
+  state = observe(state, 0, 'light')
+  state = observe(state, 1, 'light')
+  state = act(state, 'undo')
+  assert.equal(state.progress[2].complete, true)
+  assert.deepEqual(state.progress[2].evidence, [])
+  state = observe(state, 0, 'light')
+  assert.equal(lessonEvidence(state, 2).ready, false)
+  state = observe(observe(state, 1, 'light'), 0, 'light')
+  assert.equal(lessonEvidence(state, 2).ready, true)
+  assert.equal(state.progress[2].feedback, 'none')
+})
+
 test('invalid actions and boundary inputs do not corrupt a world or a challenge', () => {
   const state = createUniverse(Infinity)
   for (const region of [-1, 6, NaN, .5]) assert.equal(act(state, 'select-region', { region }), state)
@@ -241,6 +301,7 @@ test('invalid actions and boundary inputs do not corrupt a world or a challenge'
   for (const index of [-1, 4, NaN, .5]) assert.equal(act(state, 'lesson', { index }), state)
   assert.equal(act(state, 'answer', { index: 0 }), state)
   assert.equal(act(state, 'check'), state)
+  assert.equal(act(state, 'repeat-lesson'), state)
   const guided = act(state, 'lesson', { index: 0 })
   for (const index of [-1, 3, NaN, .5]) assert.equal(act(guided, 'answer', { index }), guided)
   assert.equal(lessonEvidence(state, -1).ready, false)
