@@ -8,6 +8,10 @@
 .dc-workspace { max-width: 740px; margin: auto; border: 1px solid var(--wd-line); border-radius: 16px; overflow: hidden; background: #0b1827; }
 .dc-board { height: 480px; width: 100%; position: relative; overflow: hidden; isolation: isolate; }
 .dc-board canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.dc-reading { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 38%; max-width: 220px; display: grid; gap: 2px; text-align: center; line-height: 1.2; color: #bad3da; }
+.dc-reading span { font-size: 10px; }
+.dc-reading strong { font: 20px/1.2 Georgia, serif; color: #e7ede7; }
+.dc-reading small { font-size: 11px; color: var(--wd-gold); }
 .dc-board button, .dc-board label, .dc-detector { position: absolute; }
 .dc-detector { top: 0; width: 29%; text-align: center; padding: 10px 5px 8px; border: 1px solid #52848a; border-top: 0; border-radius: 0 0 14px 14px; background: #122b36e8; color: #a8edf0; }
 .dc-detector-0 { left: 5%; }
@@ -30,9 +34,11 @@
 .dc-phase small { display: block; font-size: 10px; color: #b9c5bd; }
 .dc-source { left: 20%; top: 92%; transform: translate(-50%, -50%); width: 125px; background: linear-gradient(145deg, #f4d49c, #bda979); color: #14232c; display: grid; gap: 2px; font-size: 12px; font-weight: 600; box-shadow: 0 0 25px #efd09a22; }
 .dc-source span { font-size: 22px; line-height: 1; }
+.dc-source:not(:disabled):hover { background: linear-gradient(145deg, #ffe4b7, #d1bb86); border-color: #ffe4b7; }
 .dc-source:disabled { opacity: .65; }
 .dc-continue, .dc-pause { left: 77%; top: 90%; transform: translate(-50%, -50%); width: 135px; font-size: 13px; padding: 10px 6px; }
 .dc-continue { background: var(--wd-aqua); color: #122b30; border: 1px solid #d8ffed; font-weight: 700; }
+.dc-continue:hover { background: #c9f4e9; border-color: #e5fff5; }
 .dc-pause { background: #112839; color: #c0dadd; }
 .dc-legend { padding: 8px 10px; text-align: center; font-size: 11px; color: #a4bcc7; border-block: 1px solid #304553; }
 .dc-status { padding: 14px 18px 8px; }
@@ -41,6 +47,7 @@
 .dc-status p { margin-top: 4px; font-size: 13px; line-height: 1.45; color: #c1d1d8; }
 .dc-counts { padding: 8px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 38px; }
 .dc-counts > span { font-size: 12px; color: #b6cbd2; }
+.dc-counts > span small { display: block; margin-top: 3px; font-size: 11px; color: var(--wd-gold); }
 .dc-clicks { display: flex; flex-wrap: wrap; gap: 4px; max-width: 150px; min-width: 60px; }
 .dc-clicks i { display: block; width: 7px; height: 7px; border-radius: 50%; }
 .dc-click-0 { background: #8fe9eb; }
@@ -67,6 +74,9 @@
   .dc-timing { margin-block: 12px; }
   .dc-timing button { padding-inline: 8px; font-size: 12px; }
   .dc-board { height: 350px; }
+  .dc-reading { gap: 1px; }
+  .dc-reading strong { font-size: 14px; }
+  .dc-reading span, .dc-reading small { font-size: 9px; }
   .dc-detector { padding: 4px 3px; width: 31%; }
   .dc-detector-0 { left: 4%; }
   .dc-detector-1 { right: 4%; }
@@ -76,7 +86,7 @@
   .dc-splitter { width: 121px; padding: 4px; }
   .dc-splitter strong { font-size: 11px; }
   .dc-splitter small { font-size: 9px; }
-  .dc-phase { padding: 5px; left: 3%; width: 30%; }
+  .dc-phase { padding: 5px; left: 3%; top: 56%; width: 30%; }
   .dc-phase small { font-size: 9px; }
   .dc-source { width: 100px; padding: 6px 3px; font-size: 11px; }
   .dc-continue, .dc-pause { width: 110px; font-size: 11px; }

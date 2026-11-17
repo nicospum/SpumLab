@@ -180,7 +180,7 @@ export default function App() {
               {selectedWorld ? <div className="wd-inspector">
                 <div><strong>{selectedWorld.name}</strong><button aria-label="Cerrar descripción" onClick={closeInspection}>×</button></div>
                 <p>{selectedWorld.description}</p>
-                {selectedIsPossible && !finished && !limit && <button className="wd-primary" onClick={() => pose(`is:${selectedWorld.id}`)}>Preguntar si es {selectedWorld.name.toLocaleLowerCase('es')}</button>}
+                {selectedIsPossible && !finished && !limit && <button className="wd-primary" onClick={() => pose(`is:${selectedWorld.id}`)} data-help-title="Preguntar por esta figura" data-help-body="Hace una pregunta por el nombre de esta figura. Un sí deja solo esa posibilidad; un no la descarta. Cuenta como una de las veinte preguntas y respeta las respuestas anteriores.">Preguntar si es {selectedWorld.name.toLocaleLowerCase('es')}</button>}
                 {finished && <p>Esta palabra coincide con todas las respuestas de tu recorrido.</p>}
                 {selectedIsPossible && !finished && limit && <p>Usaste las veinte preguntas de esta rama. Volvé a un punto anterior para seguir preguntando por las figuras posibles.</p>}
                 {excludedBy && <>
@@ -191,7 +191,7 @@ export default function App() {
                 <p>{mode === 'surprise'
                   ? 'Al empezar, el juego tenía una lista de posibilidades. Las preguntas y respuestas fueron definiendo esta palabra.'
                   : 'Esta era la palabra elegida al iniciar la partida. El registro fue dejando una sola posibilidad.'}</p>
-                <button className="wd-primary" onClick={() => goBack(0)}>Volver al inicio y preguntar otra cosa</button>
+                <button className="wd-primary" onClick={() => goBack(0)} data-help-title="Abrir otro camino desde el inicio" data-help-body="Recupera las dieciséis posibilidades de esta partida para que pruebes otra pregunta. Conserva el recorrido anterior en Mis caminos. La regla y la partida siguen siendo las mismas; repetir una pregunta del mismo punto recupera su respuesta guardada.">Volver al inicio y preguntar otra cosa</button>
                 <button onClick={() => switchMode(mode === 'surprise' ? 'fixed' : 'surprise')}>Probar la regla {mode === 'surprise' ? 'con palabra elegida' : 'sorpresa'}</button>
               </div> : limit ? <div className="wd-discovery"><p>Usaste las veinte preguntas de esta rama. Quedan {node.candidates.length} posibilidades. Elegí un punto anterior y probá una pregunta que las distinga.</p><button onClick={() => setHistoryOpen(true)}>Abrir mis caminos</button></div>
                 : <div className="wd-questions">
@@ -199,7 +199,7 @@ export default function App() {
                     {!useful.length && <p className="wd-name-hint">Comparten las propiedades que quedan. Preguntá por el nombre de una figura.</p>}
                     {suggestions.map(question => <button key={question.id} onClick={() => pose(question.id)} data-help-title={question.text} data-help-body={question.detail}>{question.text}<span aria-hidden="true">↗</span></button>)}
                   </>}
-                  {remaining.length > 0 && <button className="wd-other" aria-expanded={otherQuestions} onClick={() => {
+                  {remaining.length > 0 && <button className="wd-other" aria-expanded={otherQuestions} data-help-title="Explorar otras preguntas" data-help-body="Abre la lista de preguntas que todavía no hiciste en esta rama, o vuelve a las sugeridas. Elegir una en la lista no la envía: tocá Preguntar para obtener la respuesta. Algunas no descartan figuras; también pueden ayudarte a entender qué ya sabés." onClick={() => {
                     setOtherQuestions(value => !value)
                     setMessage('')
                   }}>{otherQuestions ? 'Volver a las sugeridas −' : 'Otras preguntas +'}</button>}
@@ -216,7 +216,7 @@ export default function App() {
           </div>
           <div className="wd-history-toolbar" ref={actions}>
             <button disabled={node.parent === null} onClick={() => node.parent !== null && goBack(node.parent)} data-help-title="Volver una pregunta" data-help-body="Volvés al estado anterior de esta partida. El camino que dejaste sigue guardado y podés recorrerlo otra vez desde Mis caminos.">↶ Una pregunta atrás</button>
-            <button aria-expanded={historyOpen} onClick={() => setHistoryOpen(open => !open)}>Mis caminos</button>
+            <button aria-expanded={historyOpen} onClick={() => setHistoryOpen(open => !open)} data-help-title="Explorar tus caminos guardados" data-help-body="Abre o cierra el registro de esta partida. Tocá una respuesta para volver a ese punto y hacer otra pregunta. Las ramas anteriores se conservan durante esta visita; repetir una pregunta desde el mismo punto recupera su respuesta.">Mis caminos</button>
             <button aria-expanded={resetPending} onClick={() => setResetPending(value => !value)}>Nueva partida</button>
           </div>
           {resetPending && <div className="wd-reset"><p>La nueva partida reemplaza los caminos de esta regla.</p><button onClick={() => { update(fresh(mode)); setMessage('Nueva partida lista.'); }}>Empezar de nuevo</button><button onClick={() => setResetPending(false)}>Seguir explorando</button></div>}

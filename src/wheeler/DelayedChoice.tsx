@@ -15,6 +15,7 @@ export default function DelayedChoice({ active }: { active: boolean }) {
   const expected = probabilities(setup.phase, setup.closed)
   const measurement = currentMeasurement(state)
   const total = (measurement?.d0 ?? 0) + (measurement?.d1 ?? 0)
+  const otherClicks = state.measurements.reduce((sum, item) => sum + item.d0 + item.d1, 0) - total
   const moving = state.stage === 'entering' || state.stage === 'leaving'
   const ready = idle(state)
   const choosing = state.stage === 'choosing'
@@ -52,24 +53,27 @@ export default function DelayedChoice({ active }: { active: boolean }) {
   }, [active, state.stage])
 
   let headline = 'Tocá la fuente para enviar un fotón.'
-  let explanation = 'Probá el divisor de salida y la fase sobre el montaje.'
+  const reading = setup.closed
+    ? 'Con caminos reunidos, variá la fase y compará muchos clics: el reparto cambia por interferencia.'
+    : 'Cada clic identifica un brazo: D0 → A, D1 → B. Cambiar la fase no altera el reparto esperado 50/50.'
+  let explanation = reading
   if (state.stage === 'entering') {
     headline = paused ? 'Viaje pausado.' : 'El fotón está entrando.'
     explanation = state.setup.timing === 'after' ? 'La elección se habilita después del primer divisor.' : 'La configuración se eligió antes de emitir.'
   } else if (choosing) {
     headline = 'Ya entró. Ahora elegí cómo medir.'
-    explanation = 'Pausa didáctica. Tocá el divisor de salida y después Continuar.'
+    explanation = 'Pausa didáctica: ya pasó la entrada y aún no llegó a la salida. Elegí el divisor y continuá.'
   } else if (state.stage === 'leaving') {
     headline = paused ? 'Viaje pausado.' : 'La elección está fijada para este fotón.'
     explanation = setup.closed ? 'Las amplitudes se reúnen en el divisor de salida.' : 'D0 identifica el brazo A y D1 el brazo B.'
   } else if (state.stage === 'detected') {
     headline = state.batch ? 'Se sumaron 100 detecciones simuladas.' : `Un fotón, un clic en D${state.detector}.`
-    explanation = setup.closed ? 'Cambiá la fase y compará cómo se reparte la probabilidad.' : 'Con la salida abierta, variar la fase mantiene el reparto esperado 50/50.'
+    explanation = reading
   }
 
   return <section id="eleccion-retardada" className="wd-game dc-lab" data-scene-workspace="" aria-labelledby="dc-title">
     <div className="dc-heading"><p className="wd-eyebrow">ELECCIÓN RETARDADA DE WHEELER</p><h2 id="dc-title">Elegir cuando ya entró.</h2>
-      <p>Ahora explorás un montaje cuántico ideal. Elegí si los dos caminos se reúnen antes de llegar a los detectores.</p></div>
+      <p>Enviá un fotón, una unidad de luz. Elegí si sus caminos posibles se reúnen y observá dónde se registra el clic.</p></div>
     <div className="dc-timing" aria-label="Momento de la elección">
       <button disabled={!ready} aria-pressed={state.setup.timing === 'before'} onClick={() => dispatch({ type: 'timing', value: 'before' })} data-help-title="Elegir antes de emitir" data-help-body="El divisor de salida se fija al emitir y permanece igual durante ese disparo.">Elegir antes</button>
       <button disabled={!ready} aria-pressed={state.setup.timing === 'after'} onClick={() => dispatch({ type: 'timing', value: 'after' })} data-help-title="Elegir después de entrar" data-help-body="El viaje se pausa después del primer divisor. Podés insertar o retirar el divisor de salida antes de continuar hacia los detectores.">Elegir después</button>
@@ -78,6 +82,11 @@ export default function DelayedChoice({ active }: { active: boolean }) {
     <div className="dc-workspace" ref={viewport}>
       <div className="dc-board spum-live-stage" aria-label="Interferómetro de dos caminos">
         <DelayedBoard state={state} active={active} />
+        <div className="dc-reading" data-help-title={setup.closed ? 'Medir interferencia' : 'Identificar el brazo'}
+          data-help-body={setup.closed ? 'Los dos brazos se reúnen. Sus amplitudes, que sirven para calcular probabilidades, pueden reforzarse o cancelarse. Al cambiar la fase y acumular muchos clics podés ver ese efecto. Un clic solo no alcanza para demostrar interferencia.' : 'Con el divisor retirado, cada brazo llega a un detector distinto. Un clic en D0 identifica el brazo A y un clic en D1 identifica el B. Los detectores siguen activos, igual que cuando reunís los caminos.'}>
+          <span>Qué medís</span><strong>{setup.closed ? 'Interferencia' : 'Camino'}</strong>
+          <small>{setup.closed ? 'Fase → reparto' : 'D0 ← A · D1 ← B'}</small>
+        </div>
         {[0, 1].map(detector => {
           const clicks = (detector === 0 ? measurement?.d0 : measurement?.d1) ?? 0
           return <div key={detector} className={`dc-detector dc-detector-${detector} ${state.detector === detector ? 'dc-detected' : ''}`}
@@ -90,26 +99,28 @@ export default function DelayedChoice({ active }: { active: boolean }) {
           aria-label={setup.closed ? 'Retirar divisor de salida' : 'Insertar divisor de salida'}
           onClick={() => dispatch({ type: 'closed', value: !state.setup.closed })}
           data-help-title="Divisor de salida" data-help-body="Insertado, combina las amplitudes de ambos brazos y permite interferencia. Retirado, cada detector identifica un brazo. Los dos detectores están activos en ambos casos.">
-          <span aria-hidden="true">{setup.closed ? '◇' : '⋮'}</span><strong>{setup.closed ? 'Reunir caminos' : 'Salida abierta'}</strong>
-          <small>{canChoose(state) ? 'Tocá para cambiar' : 'Fijado este disparo'}</small>
+          <span aria-hidden="true">{setup.closed ? '◇' : '⋮'}</span><strong>{setup.closed ? 'Salida reunida' : 'Salida abierta'}</strong>
+          <small>{canChoose(state) ? setup.closed ? 'Tocá para retirar' : 'Tocá para insertar' : 'Fijado este disparo'}</small>
         </button>
-        <label className="dc-phase" data-help-title="Diferencia de fase" data-help-body="Ajusta el desfase total entre las amplitudes de los brazos. Al recombinarlas cambia la interferencia. La fase se fija al emitir cada fotón.">
+        <label className="dc-phase" data-help-title="Fase: alinear las oscilaciones" data-help-body="La fase indica cómo se alinean las oscilaciones de ambos brazos. Al reunirlos, pueden reforzarse o cancelarse. En este montaje ideal, 0° concentra los clics en D0 y 180° en D1. Con la salida abierta la fase no cambia el reparto. Se fija al emitir cada fotón.">
           <span>Fase <strong>{state.setup.phase}°</strong></span>
           <input aria-label="Diferencia de fase en grados" type="range" min="0" max="360" step="15" value={state.setup.phase} disabled={!ready}
             onChange={event => dispatch({ type: 'phase', value: Number(event.target.value) })} />
-          <small>{ready ? 'Deslizá la placa' : 'Fijada al emitir'}</small>
+          <small>{ready ? 'Cómo coinciden las ondas' : 'Fijada al emitir'}</small>
         </label>
         <button className="dc-source" disabled={!ready} onClick={() => { setPaused(false); dispatch({ type: 'emit' }) }}
           data-help-title="Fuente de fotones individuales" data-help-body="Envía un fotón por disparo. El primer divisor prepara amplitudes en ambos brazos y al final se registra un solo clic.">
           <span aria-hidden="true">✦</span>{ready ? 'Emitir 1 fotón' : 'Fotón en viaje'}
         </button>
-        {choosing && <button className="dc-continue" onClick={() => { setPaused(false); dispatch({ type: 'continue' }) }}>Continuar →</button>}
-        {moving && <button ref={pause} className="dc-pause" onClick={() => setPaused(value => !value)}>{paused ? 'Seguir viaje ▶' : 'Pausar viaje Ⅱ'}</button>}
+        {choosing && <button className="dc-continue" onClick={() => { setPaused(false); dispatch({ type: 'continue' }) }} data-help-title="Continuar con tu elección" data-help-body="Fija el divisor de salida para este fotón y continúa hasta una detección. Después podés cambiar el montaje y emitir otro.">Continuar →</button>}
+        {moving && <button ref={pause} className="dc-pause" onClick={() => setPaused(value => !value)} data-help-title="Pausar o continuar el dibujo" data-help-body="Detiene o reanuda la animación para observarla. Es una ayuda didáctica: no detiene luz real ni cambia el montaje o sus probabilidades.">{paused ? 'Seguir viaje ▶' : 'Pausar viaje Ⅱ'}</button>}
       </div>
-      <p className="dc-legend">Amplitudes de un solo fotón · Viaje ralentizado</p>
+      <p className="dc-legend" data-help-title="Dos trazos, un fotón" data-help-body="Los trazos representan amplitudes, cantidades con las que calculamos probabilidades. No muestran dos partículas ni trayectorias observadas. Cada fotón termina en un solo clic. El viaje se ralentiza para poder explorar el montaje.">Dos amplitudes de un fotón · Un solo clic · Viaje ralentizado</p>
       <div className="dc-status" ref={status} tabIndex={-1} role="status" aria-live="polite" aria-atomic="true"><strong>{headline}</strong><p>{explanation}</p></div>
       <div className="dc-counts">
-        <span><strong>{total}</strong> {total === 1 ? 'detección' : 'detecciones'} con este montaje</span>
+        <span><strong>{total}</strong> {total === 1 ? 'detección' : 'detecciones'} con este montaje
+          {otherClicks > 0 && <small>{otherClicks} {otherClicks === 1 ? 'clic guardado' : 'clics guardados'} en otras configuraciones.</small>}
+        </span>
         <div className="dc-clicks" aria-label={measurement?.recent.length === 1 ? 'Última detección de este montaje' : `Últimas ${measurement?.recent.length ?? 0} detecciones de este montaje`}>
           {measurement?.recent.map((detector, index) => <i key={index} className={`dc-click-${detector}`} aria-label={`D${detector}`} />)}
         </div>
@@ -117,12 +128,12 @@ export default function DelayedChoice({ active }: { active: boolean }) {
       <div className="dc-actions">
         <button disabled={!ready} onClick={() => dispatch({ type: 'batch', randoms: Array.from({ length: 100 }, () => Math.random()) })}
           data-help-title="Cien repeticiones del montaje" data-help-body="Calcula cien disparos independientes con la fase, salida y momento de elección actuales. Cada resultado se sortea con las probabilidades del modelo. Los puntos muestran las últimas 24 detecciones.">Simular 100 detecciones</button>
-        <button disabled={!ready || !state.measurements.length} onClick={() => dispatch({ type: 'clear' })}>Vaciar conteos</button>
+        <button disabled={!ready || !state.measurements.length} onClick={() => dispatch({ type: 'clear' })} data-help-title="Vaciar todos los conteos" data-help-body="Borra las detecciones y la tabla de todas las configuraciones de esta escena. Conserva la fase, el divisor y el momento de elección actuales. No modifica tu partida de veinte preguntas.">Vaciar conteos</button>
       </div>
     </div>
 
     <div className="dc-notes">
-      <details><summary>Comparar mediciones ({state.measurements.length})</summary>
+      <details><summary data-help-title="Comparar tus configuraciones" data-help-body="Cada fila reúne los clics de una misma fase, salida y momento de elección. Al cambiar el montaje, los clics anteriores se conservan acá. Compará el porcentaje observado en D0 con la probabilidad calculada.">Comparar mediciones ({state.measurements.length})</summary>
         <p>Cada fila conserva su fase, salida y momento de elección. Compará los porcentajes observados con la probabilidad calculada. Un lote pequeño puede fluctuar.</p>
         {state.measurements.length ? <div className="dc-table-wrap"><table><caption>Resultados agrupados por condición</caption><thead><tr><th>Montaje</th><th>Clics</th><th>D0 observado</th><th>D0 esperado</th></tr></thead>
           <tbody>{state.measurements.map(item => {
@@ -132,13 +143,14 @@ export default function DelayedChoice({ active }: { active: boolean }) {
           })}</tbody></table></div> : <p>Emití un fotón o simulá un lote para registrar la primera condición.</p>}
       </details>
       <details><summary>Tres cosas para descubrir jugando</summary>
-        <ol><li>Con la salida reunida, compará 0° y 180°. Observá qué detector concentra los clics.</li>
-          <li>Retirá el divisor y repetí esas fases. Compará el reparto esperado y los conteos.</li>
-          <li>Elegí después, emití un fotón y cambiá la salida durante la pausa. Compará con la misma fase y salida elegidas antes.</li></ol>
+        <ol><li><strong>¿Podés cambiar el detector?</strong> Con la salida reunida, probá 0° y simulá 100 detecciones. Repetí a 180°. El reparto cambia: las amplitudes se refuerzan en una salida y se cancelan en la otra.</li>
+          <li><strong>¿La fase siempre importa?</strong> Retirá el divisor y repetí esas fases. La probabilidad queda en 50/50: cada detector identifica un brazo. Los conteos pueden fluctuar alrededor de ese reparto.</li>
+          <li><strong>¿Qué cambia al elegir tarde?</strong> Elegí después, emití un fotón y cambiá la salida durante la pausa. Repetí el mismo montaje eligiendo antes. Con la misma fase y salida, ambos dan las mismas probabilidades.</li></ol>
       </details>
       <details><summary>Qué cambia cuando medís</summary>
         <p>Los detectores registran fotones en ambas configuraciones. Con la salida abierta, cada detector está asociado a un brazo. Al insertar el segundo divisor, cada salida combina amplitudes de los dos brazos. La fase determina si se refuerzan o se cancelan.</p>
         <p>La elección puede hacerse después de que el fotón haya entrado, mientras todavía queda por interactuar con el divisor de salida. El modelo calcula la detección usando esa configuración. Los clics anteriores permanecen registrados en sus propias condiciones.</p>
+        <p>Elegir tarde cambia la forma de medir que encontrará el fotón al salir. Este resultado no demuestra que podamos cambiar el pasado. La interferencia se reconoce comparando muchos clics al variar la fase; un solo clic no decide esa comparación.</p>
         <p>Wheeler propuso este experimento y Jacques y colaboradores realizaron una versión con fotones individuales en 2007. Usaron conmutación electroóptica aleatoria y una separación espaciotemporal cuidadosamente controlada.</p>
         <p>Acá la pausa permite decidir a mano. Los trazos representan amplitudes y los clics representan observaciones. Se calculan probabilidades de un interferómetro ideal con divisores 50/50, fase estable y detección perfecta.</p>
         <p className="dc-equation">Salida reunida · P(D0) = (1 + cos φ) / 2<br />Salida abierta · P(D0) = P(D1) = ½</p>

@@ -36,6 +36,16 @@ Referencias primarias: [Jacques et al., *Experimental realization of Wheeler's d
 
 Tres agentes independientes revisaron ciencia, código y producto. La revisión científica contrastó 254 casos adicionales. El recorrido en navegador comprobó cambios de fase y salida, emisión individual, pausa, lote, tabla por condición, cambio de escena y conservación de la partida previa. Se corrigieron el encuadre de enlaces directos, el foco durante el viaje, el singular de los conteos y el espacio entre detectores y divisor en celular. Se comprobaron escritorio y tamaños móviles emulados. Continúan pendientes Safari, teléfonos físicos y pruebas de aprendizaje con participantes.
 
+### Revisión de primera visita
+
+Una segunda revisión con tres agentes partió de la versión pública. Encontró tres fricciones educativas: el botón «Reunir caminos» parecía nombrar una acción aunque retiraba el divisor; cambiar fase o salida no explicaba su efecto hasta emitir; y el contador volvía a cero al cambiar de condición sin hacer evidente que las mediciones anteriores seguían guardadas.
+
+El botón ahora separa estado («Salida reunida/abierta») y acción («Tocá para retirar/insertar»). El centro libre del montaje identifica qué se mide: interferencia o camino, junto con su relación con la fase o los detectores. La explicación se actualiza también antes de emitir y después de un lote. Los clics de otras condiciones aparecen como guardados. Se define fase como alineación de las oscilaciones, se explica la función de las amplitudes y se indica que reconocer interferencia requiere comparar muchos clics. La lectura ampliada aclara qué puede concluirse de la elección tardía.
+
+Se agregaron ayudas específicas para el dibujo, su leyenda, continuar, pausar, vaciar y comparar, así como para cuatro controles del primer juego que heredaban explicaciones genéricas. Se corrigió el estilo de `hover` de la fuente y de Continuar: un estilo general reemplazaba su fondo claro y dejaba texto oscuro sobre fondo oscuro, aun estando habilitados.
+
+La revisión de código comprobó resolución de ayudas y conservación de conteos; la de ciencia validó el nuevo lenguaje. En navegador se probaron pantallas de 320 × 700 y 390 × 844, cambios de fase y salida, lotes, elección durante el viaje y ayuda sobre el canvas. La ayuda se coloca debajo del dibujo y Escape permite seguir jugando. La revisión es una evaluación de QA, sin participantes de aprendizaje ni dispositivos físicos.
+
 ## Qué se juega y qué se aprende
 
 El visitante toca preguntas o figuras para reducir un conjunto de 16 posibilidades. Puede volver una pregunta atrás o elegir cualquier respuesta en «Mis caminos». Al hacer otra pregunta desde ese punto conserva ambas ramas para compararlas.

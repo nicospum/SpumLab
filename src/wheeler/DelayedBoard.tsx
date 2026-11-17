@@ -151,5 +151,5 @@ export default function DelayedBoard({ state, active }: { state: DelayedState; a
     context.setTransform(ratio, 0, 0, ratio, 0, 0)
     drawBoard(context, size.width, size.height, state)
   }, [state, size, active])
-  return <canvas ref={canvas} aria-hidden="true" />
+  return <canvas ref={canvas} aria-hidden="true" data-help-title="El montaje de dos caminos" data-help-body="La luz entra por abajo. El primer divisor prepara dos amplitudes, que sirven para calcular probabilidades. Los espejos dirigen los brazos A y B hacia la salida. Ahí elegís reunirlos o separarlos antes de los detectores. Cada fotón produce un solo clic; el dibujo no muestra dos partículas ni trayectorias observadas." />
 }
