@@ -1,5 +1,5 @@
 export interface Experiment {
-  id: 'doble-rendija' | 'prisma' | 'hawking' | 'lente-gravitacional' | 'entropia' | 'acrecion' | 'horizonte' | 'reloj-de-luz' | 'tren-de-einstein' | 'nos-vemos-a-la-vuelta' | 'ascensor-de-einstein' | 'el-tiempo-tiene-altura' | 'orbita-que-no-se-cierra' | 'efecto-fotoelectrico' | 'entrelazados' | 'espacio-con-frontera' | 'dos-lenguajes' | 'frontera-caliente' | 'curva-de-page' | 'holografia' | 'eratostenes' | 'bell'
+  id: 'doble-rendija' | 'prisma' | 'hawking' | 'lente-gravitacional' | 'entropia' | 'acrecion' | 'horizonte' | 'reloj-de-luz' | 'tren-de-einstein' | 'nos-vemos-a-la-vuelta' | 'ascensor-de-einstein' | 'el-tiempo-tiene-altura' | 'orbita-que-no-se-cierra' | 'efecto-fotoelectrico' | 'entrelazados' | 'espacio-con-frontera' | 'dos-lenguajes' | 'frontera-caliente' | 'curva-de-page' | 'holografia' | 'eratostenes' | 'bell' | 'wheeler'
   number: string
   field: string
   title: string
@@ -168,5 +168,17 @@ export const experiments: readonly Experiment[] = [
       'Girá dos analizadores, reuní pares de resultados y construí una desigualdad de Bell con cuatro retos sobre correlaciones y modelos locales.',
     tags: ['Bell', 'Correlaciones', 'Información cuántica'],
     href: '/bell/',
+  },
+  {
+    id: 'wheeler',
+    number: '20',
+    field: 'WHEELER · UNIVERSO PARTICIPATIVO',
+    title: 'El mundo sin elegir',
+    subtitle: 'Cada pregunta abre un camino.',
+    question: '¿Qué le preguntarías primero al universo?',
+    discovery:
+      'Jugá las veinte preguntas, volvé a una respuesta y probá otro recorrido. Una analogía para explorar la hipótesis de Wheeler, it from bit.',
+    tags: ['Wheeler', 'It from bit', 'Veinte preguntas'],
+    href: '/wheeler/',
   },
 ]

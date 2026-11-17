@@ -43,6 +43,7 @@ export default defineConfig({
         holografia: 'holografia/index.html',
         eratostenes: 'eratostenes/index.html',
         bell: 'bell/index.html',
+        wheeler: 'wheeler/index.html',
       },
       output: {
         manualChunks(id) {

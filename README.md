@@ -4,7 +4,7 @@ Una colección de laboratorios interactivos para aprender ciencia haciendo pregu
 
 La [revisión integral de retos y modelos](docs/revision-integral/README.md) documenta la versión anterior a Eratóstenes: 17 laboratorios, 81 retos y preguntas, correcciones, controles de QA independientes y límites de las pruebas móviles. Se conserva como registro fechado; el catálogo actual añade Eratóstenes y Bell, con cuatro retos propios cada uno y revisiones independientes.
 
-El [seguimiento del catálogo completo](docs/revision-integral/seguimiento/README.md) reúne los 19 laboratorios actuales y sus 89 retos/preguntas. Distingue las nuevas pruebas de uso, las correcciones y la evidencia anterior revalidada mediante hashes; no amplía retroactivamente la revisión histórica.
+El [seguimiento del catálogo completo](docs/revision-integral/seguimiento/README.md) reúne la revisión de los 19 laboratorios anteriores a Wheeler y sus 89 retos/preguntas. Wheeler amplía el catálogo a 20 laboratorios con un juego de preguntas y caminos alternativos. Su [documentación propia](docs/WHEELER_LABORATORIO.md) describe las reglas, las fuentes y la revisión independiente.
 
 - `/`: portada y catálogo de experimentos.
 - `/doble-rendija/`: detecciones individuales, interferencia, difracción e información del camino.
@@ -30,10 +30,11 @@ El [seguimiento del catálogo completo](docs/revision-integral/seguimiento/READM
 - `/curva-de-page/`: paradoja de la información, entropía calculada de qubits, correlaciones y cuatro retos. Ver [modelo y límites](docs/PAGE_MODELO.md) y [revisión independiente](docs/QA_PAGE_2026-11-02.md).
 - `/eratostenes/`: Dos sombras, una Tierra; dos sitios del mismo meridiano, varillas y sombras manipulables, distancia y ángulos para reconstruir la circunferencia terrestre con cuatro retos. Ver [modelo, interacción y límites](docs/ERATOSTENES_LABORATORIO.md) y [QA de producto](docs/QA_ERATOSTENES_2026-11-02.md).
 - `/bell/`: Bell: ¿respuestas escritas?; analizadores giratorios, cuatro correlaciones CHSH y comparación entre un modelo local explícito y predicciones cuánticas. Ver [modelo, supuestos y límites](docs/BELL_LABORATORIO.md) y [QA de producto](docs/QA_BELL_2026-11-02.md).
+- `/wheeler/` — El mundo sin elegir. Veinte preguntas con dos reglas, figuras manipulables e historial para volver atrás y abrir otra rama. Ver [reglas, alcance y fuentes](docs/WHEELER_LABORATORIO.md).
 
 La actividad **Contar lo que no vemos** está dentro de `/entropia/#information-bridge`; no agrega otra tarjeta de laboratorio.
 
-El repositorio se publica mediante Vercel en [spumexp.lat](https://www.spumexp.lat/). Las 26 entradas HTML (19 laboratorios canónicos, tres enlaces históricos de Holografía, portada y tres especiales) se compilan juntas y se sirven desde el mismo dominio; cada laboratorio tiene su entrada y estilos independientes. La portada, los especiales, entropía, horizonte, Eratóstenes, Bell y los laboratorios de Einstein y Maldacena no cargan Three.js. Los capítulos de Maldacena se cargan por separado. Su marco reutiliza los controles de escena y guarda un pasaporte local independiente; no altera las huellas anteriores. Ver [modelos, alcance y ejecución](docs/MALDACENA_LABORATORIOS.md).
+El repositorio se publica mediante Vercel en [spumexp.lat](https://www.spumexp.lat/). Las 27 entradas HTML (20 laboratorios canónicos, tres enlaces históricos de Holografía, portada y tres especiales) se compilan juntas y se sirven desde el mismo dominio. Cada laboratorio tiene su entrada y estilos independientes. La portada, los especiales, entropía, horizonte, Eratóstenes, Bell, Wheeler y los laboratorios de Einstein y Maldacena usan recursos gráficos ligeros y específicos de cada actividad. Los capítulos de Maldacena se cargan por separado. Su marco reutiliza los controles de escena y guarda un pasaporte local independiente. Ver [modelos, alcance y ejecución](docs/MALDACENA_LABORATORIOS.md).
 
 ## Ejecutar localmente
 

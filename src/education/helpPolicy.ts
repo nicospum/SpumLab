@@ -21,6 +21,7 @@ const LAB_PATHS = new Set([
   'curva-de-page',
   'eratostenes',
   'bell',
+  'wheeler',
 ])
 
 export function isLabPath(path: string) {

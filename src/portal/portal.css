@@ -344,6 +344,17 @@ svg {
   height: auto;
   margin-top: -5px;
 }
+.portal-wheeler-cover {
+  display: block;
+  aspect-ratio: 560 / 296;
+  object-fit: contain;
+  background: #071222;
+  margin-block: 8px 16px;
+}
+.portal-experiment-card.wheeler .portal-art-link {
+  background: #071222;
+  color: #d9c29c;
+}
 .portal-art-caption {
   display: flex;
   align-items: center;

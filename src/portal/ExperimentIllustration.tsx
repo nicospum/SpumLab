@@ -1,5 +1,17 @@
 import type { Experiment } from './catalog'
 export default function ExperimentIllustration({ kind }: { kind: Experiment['id'] }) {
+  if (kind === 'wheeler')
+    return (
+      <img
+        className="experiment-illustration portal-wheeler-cover"
+        src="/wheeler/universo-participativo.webp"
+        alt=""
+        width="1254"
+        height="1254"
+        loading="lazy"
+        decoding="async"
+      />
+    )
   if (kind === 'bell')
     return (
       <svg viewBox="0 0 560 296" className="experiment-illustration" aria-hidden="true">
