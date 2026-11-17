@@ -55,6 +55,7 @@ export default function DelayedChoice({ active }: { active: boolean }) {
   useLayoutEffect(() => {
     if (!active || initialStage.current === state.stage) return
     initialStage.current = state.stage
+    if (['#wheeler-idea', '#wheeler-escenas'].includes(location.hash) && !viewport.current?.contains(document.activeElement)) return
     if (state.stage === 'choosing') splitter.current?.focus({ preventScroll: true })
     if (state.stage === 'detected') (guided ? guideResult.current : status.current)?.focus({ preventScroll: true })
     if (state.stage === 'entering' || state.stage === 'leaving') pause.current?.focus({ preventScroll: true })
@@ -64,6 +65,7 @@ export default function DelayedChoice({ active }: { active: boolean }) {
 
   useLayoutEffect(() => {
     if (!active || !guided || !viewport.current) return
+    if (['#wheeler-idea', '#wheeler-escenas'].includes(location.hash) && !viewport.current.contains(document.activeElement)) return
     const target = guideResult.current ?? viewport.current.querySelector<HTMLButtonElement>('.dc-prediction-options button')
     target?.focus({ preventScroll: true })
     const bounds = viewport.current.getBoundingClientRect()
@@ -98,9 +100,9 @@ export default function DelayedChoice({ active }: { active: boolean }) {
     explanation = reading
   }
 
-  return <section id="eleccion-retardada" className="wd-game dc-lab" data-scene-workspace="" aria-labelledby="dc-title">
+  return <section id="eleccion-retardada" className="wd-game dc-lab" tabIndex={-1} data-scene-workspace="" aria-labelledby="dc-title">
     <div className="dc-heading"><p className="wd-eyebrow">ELECCIÓN RETARDADA DE WHEELER</p><h2 id="dc-title">Elegir cuando ya entró.</h2>
-      <p>Enviá un fotón, una unidad de luz. Elegí si sus caminos posibles se reúnen y observá dónde se registra el clic.</p></div>
+      <p>Enviá un fotón, una unidad de luz. Acá la «pregunta» se concreta en el montaje: elegís estudiar el camino o la interferencia. Cada clic es un registro. <a href="#wheeler-idea">¿Qué une las dos escenas?</a></p></div>
     {!guided && <div className="dc-explore-tools">
       <button disabled={!ready} onClick={() => act({ type: 'lesson', index: 0 })} data-help-title="Cuatro retos guiados" data-help-body="Hacé una predicción, probala sobre el montaje y comprobá tu explicación. Cada reto guarda sus propias observaciones durante esta visita; podés volver a la exploración libre.">Empezar los cuatro retos →</button>
       <span>{learning.progress.filter(item => item.complete).length}/4 completados</span>

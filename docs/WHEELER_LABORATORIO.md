@@ -127,3 +127,11 @@ Las pruebas móviles usan tamaños de pantalla emulados. Safari, teléfonos fís
 ## Revisión de claridad y navegación
 
 Dos agentes independientes revisaron nuevamente código, explicación y uso de la versión publicada. Se reprodujeron un selector vacío al agotar las propiedades, acciones del formulario y la inspección por debajo del visor móvil, y pérdida del foco y del encuadre tras reiniciar o cambiar a una partida en su inicio. Las correcciones se acompañaron de una explicación explícita del guardado automático, la identificación de la respuesta que descarta cada figura y un historial con relaciones expresadas mediante las preguntas.
+
+### Las dos escenas como un recorrido
+
+La revisión completa encontró que pasar del juego a los fotones dejaba oculto el vínculo conceptual en una lectura desplegable. El índice ahora distingue «Analogía clásica» y «Modelo cuántico». Antes de cambiar de escena se explica la relación pregunta → registro: preguntas y respuestas sí/no en el juego; elección del montaje y clics de detectores en el interferómetro. La lectura «¿Qué une una palabra y un fotón?» está disponible desde ambas escenas sin abandonar la activa. Se mantiene explícito que *it from bit* es una hipótesis y que estos resultados no prueban que la conciencia cree el universo. El vínculo procede del propio Wheeler, *Information, Physics, Quantum* (1989), §§19.2 y 19.4.
+
+La navegación usa el hash como única fuente del cambio de escena: abrir un enlace en otra pestaña no cambia la partida original. Al regresar, se conservan las ramas del juego, los conteos y la guía; el foco y el encuadre vuelven a los controles de la actividad en curso. Consultar la explicación mientras viaja un fotón no permite que un cambio de etapa desplace la lectura. El modo ayuda descarta la consulta de la escena anterior al navegar, incluidos eventos de puntero pendientes, y permanece activado.
+
+Tres agentes revisaron código, ciencia y recorrido de producto. La verificación incluyó navegación de ida y vuelta, alternativas desde una pregunta anterior, conservación de resultados y pantallas móviles emuladas de 320 × 700 y 390 × 844. Pasaron las 484 pruebas del código publicado, lint y compilación. Safari, teléfonos físicos y comprensión con participantes siguen pendientes; QA no equivale a una medición de aprendizaje.

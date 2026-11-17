@@ -125,7 +125,24 @@ export default function HelpMode() {
     refreshScenes()
     window.addEventListener(SCENE_HELP_CHANGED, refreshScenes)
     let moveFrame = 0
+    let navigationFrame = 0
     let pendingMove: PointerEvent | null = null
+    const navigate = () => {
+      // Scenes can stay mounted while hidden. Discard the old consultation,
+      // including a queued pointer event, without switching help mode off.
+      cancelAnimationFrame(moveFrame)
+      moveFrame = 0
+      pendingMove = null
+      setTip(null)
+      setObjects([])
+      setMarker(null)
+      pin(false)
+      cancelAnimationFrame(navigationFrame)
+      navigationFrame = requestAnimationFrame(() => {
+        navigationFrame = 0
+        refreshScenes()
+      })
+    }
     const show = (event: Event) => {
       if (
         pinnedRef.current &&
@@ -261,10 +278,14 @@ export default function HelpMode() {
     document.addEventListener('dblclick', consult, true)
     document.addEventListener('keydown', key, true)
     document.addEventListener('wheel', wheel, { capture: true, passive: false })
+    window.addEventListener('hashchange', navigate)
     return () => {
       delete document.documentElement.dataset.labHelp
       window.removeEventListener(SCENE_HELP_CHANGED, refreshScenes)
+      window.removeEventListener('hashchange', navigate)
       cancelAnimationFrame(moveFrame)
+      cancelAnimationFrame(navigationFrame)
+      pendingMove = null
       document.removeEventListener('pointerover', show, true)
       document.removeEventListener('pointermove', move, true)
       document.removeEventListener('focusin', show, true)
