@@ -173,12 +173,12 @@ export const experiments: readonly Experiment[] = [
     id: 'wheeler',
     number: '20',
     field: 'WHEELER · UNIVERSO PARTICIPATIVO',
-    title: 'El mundo sin elegir',
+    title: 'El universo de Wheeler',
     subtitle: 'Cada pregunta abre un camino.',
-    question: '¿Qué le preguntarías primero al universo?',
+    question: '¿Qué cambia cuando elegís cómo observar?',
     discovery:
-      'Jugá las veinte preguntas, volvé a una respuesta y probá otro recorrido. Una analogía para explorar la hipótesis de Wheeler, it from bit.',
-    tags: ['Wheeler', 'It from bit', 'Veinte preguntas'],
+      'Dos escenas conectadas: el juego de las veinte preguntas y un interferómetro para explorar la elección retardada con fotones individuales.',
+    tags: ['Wheeler', 'It from bit', 'Elección retardada'],
     href: '/wheeler/',
   },
 ]

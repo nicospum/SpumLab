@@ -4,7 +4,7 @@ Una colección de laboratorios interactivos para aprender ciencia haciendo pregu
 
 La [revisión integral de retos y modelos](docs/revision-integral/README.md) documenta la versión anterior a Eratóstenes: 17 laboratorios, 81 retos y preguntas, correcciones, controles de QA independientes y límites de las pruebas móviles. Se conserva como registro fechado; el catálogo actual añade Eratóstenes y Bell, con cuatro retos propios cada uno y revisiones independientes.
 
-El [seguimiento del catálogo completo](docs/revision-integral/seguimiento/README.md) reúne la revisión de los 19 laboratorios anteriores a Wheeler y sus 89 retos/preguntas. Wheeler amplía el catálogo a 20 laboratorios con un juego de preguntas y caminos alternativos. Su [documentación propia](docs/WHEELER_LABORATORIO.md) describe las reglas, las fuentes y la revisión independiente.
+El [seguimiento del catálogo completo](docs/revision-integral/seguimiento/README.md) reúne la revisión de los 19 laboratorios anteriores a Wheeler y sus 89 retos/preguntas. Wheeler amplía el catálogo a 20 laboratorios con dos escenas: un juego de preguntas y caminos alternativos, y un interferómetro de elección retardada. Su [documentación propia](docs/WHEELER_LABORATORIO.md) describe las reglas, los modelos, las fuentes y la revisión independiente.
 
 - `/`: portada y catálogo de experimentos.
 - `/doble-rendija/`: detecciones individuales, interferencia, difracción e información del camino.
@@ -30,7 +30,7 @@ El [seguimiento del catálogo completo](docs/revision-integral/seguimiento/READM
 - `/curva-de-page/`: paradoja de la información, entropía calculada de qubits, correlaciones y cuatro retos. Ver [modelo y límites](docs/PAGE_MODELO.md) y [revisión independiente](docs/QA_PAGE_2026-11-02.md).
 - `/eratostenes/`: Dos sombras, una Tierra; dos sitios del mismo meridiano, varillas y sombras manipulables, distancia y ángulos para reconstruir la circunferencia terrestre con cuatro retos. Ver [modelo, interacción y límites](docs/ERATOSTENES_LABORATORIO.md) y [QA de producto](docs/QA_ERATOSTENES_2026-11-02.md).
 - `/bell/`: Bell: ¿respuestas escritas?; analizadores giratorios, cuatro correlaciones CHSH y comparación entre un modelo local explícito y predicciones cuánticas. Ver [modelo, supuestos y límites](docs/BELL_LABORATORIO.md) y [QA de producto](docs/QA_BELL_2026-11-02.md).
-- `/wheeler/` — El mundo sin elegir. Veinte preguntas con dos reglas, figuras manipulables e historial para volver atrás y abrir otra rama. Ver [reglas, alcance y fuentes](docs/WHEELER_LABORATORIO.md).
+- `/wheeler/` — El universo de Wheeler. Veinte preguntas con dos reglas e historial, y elección retardada con fotones individuales, fase y divisor manipulables sobre la escena. Ver [reglas, modelos y fuentes](docs/WHEELER_LABORATORIO.md).
 
 La actividad **Contar lo que no vemos** está dentro de `/entropia/#information-bridge`; no agrega otra tarjeta de laboratorio.
 

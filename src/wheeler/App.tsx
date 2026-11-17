@@ -1,12 +1,14 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { MoreLabs } from '../components/ui/LabJourney'
 import { ask, createGame, current, LIMIT, matches, pathTo, QUESTIONS, questionText, revisit, WORLDS } from './game'
 import type { Game, Mode, WorldId } from './game'
+import DelayedChoice from './DelayedChoice'
 
 const fresh = (mode: Mode) => createGame(mode, crypto.getRandomValues(new Uint32Array(1))[0])
 
 export default function App() {
+  const [scene, setScene] = useState<'questions' | 'delayed'>(() => location.hash === '#eleccion-retardada' ? 'delayed' : 'questions')
   const [games, setGames] = useState<Record<Mode, Game>>(() => ({ surprise: fresh('surprise'), fixed: fresh('fixed') }))
   const [mode, setMode] = useState<Mode>('surprise')
   const [inspected, setInspected] = useState<WorldId | null>(null)
@@ -43,6 +45,25 @@ export default function App() {
   const parent = node.parent === null ? null : game.nodes[node.parent]
   const eliminated = parent ? parent.candidates.length - node.candidates.length : 0
   const winner = finished ? WORLDS.find(world => world.id === node.candidates[0])! : null
+
+  useEffect(() => {
+    function followHash() {
+      if (location.hash === '#eleccion-retardada') setScene('delayed')
+      else if (['', '#juego', '#wheeler-idea'].includes(location.hash)) setScene('questions')
+    }
+    window.addEventListener('hashchange', followHash)
+    return () => window.removeEventListener('hashchange', followHash)
+  }, [])
+
+  useLayoutEffect(() => {
+    // Wait for the anchor's default navigation, then frame the newly visible scene.
+    const frame = requestAnimationFrame(() => {
+      if (!['#eleccion-retardada', '#juego', '#wheeler-idea'].includes(location.hash)) return
+      const target = scene === 'delayed' ? 'eleccion-retardada' : location.hash === '#wheeler-idea' ? 'wheeler-idea' : 'juego'
+      document.getElementById(target)?.scrollIntoView({ block: 'start', behavior: 'instant' })
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [scene])
 
   useLayoutEffect(() => {
     const gameChanged = previousGame.current !== game
@@ -93,7 +114,7 @@ export default function App() {
     <div className="wd-shell">
       <header className="wd-header">
         <a href="/" className="wd-brand">∿ SPUM</a>
-        <nav aria-label="Wheeler"><a href="#juego">Jugar</a><a href="#wheeler-idea">La idea de Wheeler</a></nav>
+        <nav aria-label="Wheeler"><a href="#wheeler-escenas">Escenas</a><a href="#wheeler-idea" onClick={() => setScene('questions')}>La idea de Wheeler</a></nav>
       </header>
       <main>
         <section className="wd-hero" aria-labelledby="wd-title">
@@ -101,8 +122,8 @@ export default function App() {
             <p className="wd-eyebrow">JOHN ARCHIBALD WHEELER</p>
             <h1 id="wd-title">It from <em>bit.</em></h1>
             <p className="wd-hero-question">¿El mundo ya estaba decidido?</p>
-            <p>Hacé una pregunta. Cada respuesta se guarda automáticamente. Volvé al mismo punto y preguntá otra cosa.</p>
-            <a className="wd-start" href="#juego">Entrar a El mundo sin elegir <span aria-hidden="true">↗</span></a>
+            <p>Jugá con preguntas y con fotones. Explorá qué cambia cuando elegís cómo observar.</p>
+            <a className="wd-start" href="#wheeler-escenas">Explorar las dos escenas <span aria-hidden="true">↗</span></a>
             <span className="wd-hypothesis">Universo participativo · Una hipótesis de Wheeler</span>
           </div>
           <figure>
@@ -111,6 +132,11 @@ export default function App() {
           </figure>
         </section>
 
+        <nav id="wheeler-escenas" className="wd-scene-nav" aria-label="Escenas del laboratorio de Wheeler">
+          <a href="#juego" aria-current={scene === 'questions' ? 'page' : undefined} onClick={() => setScene('questions')}>El mundo sin elegir</a>
+          <a href="#eleccion-retardada" aria-current={scene === 'delayed' ? 'page' : undefined} onClick={() => setScene('delayed')}>Elección retardada</a>
+        </nav>
+        <div hidden={scene !== 'questions'}>
         <section className="wd-game" id="juego" data-scene-workspace="" aria-labelledby="wd-game-title">
           <div className="wd-game-top">
             <div><p className="wd-eyebrow">EL JUEGO DE LAS VEINTE PREGUNTAS</p><h2 id="wd-game-title">El mundo sin elegir.</h2></div>
@@ -209,7 +235,8 @@ export default function App() {
               </li>
             })}</ol>
           </div>}
-          <p className="wd-game-footnote">Cada respuesta debe respetar las anteriores. Los caminos se guardan durante esta visita. Recargar empieza partidas nuevas.</p>
+          <p className="wd-game-footnote">Cada respuesta se guarda automáticamente y debe respetar las anteriores. Los caminos se conservan durante esta visita. Recargar empieza partidas nuevas.</p>
+          <a className="wd-next-scene" href="#eleccion-retardada" onClick={() => setScene('delayed')}>Seguir con la elección retardada →</a>
         </section>
 
         <section id="wheeler-idea" className="wd-reading">
@@ -220,7 +247,7 @@ export default function App() {
             <p>Un mismo registro puede encajar con las dos reglas. Volver atrás te permite comparar recorridos alternativos. Tus elecciones y las respuestas del juego participan en el resultado.</p>
             <details><summary>¿Qué quiso decir Wheeler con «it from bit»?</summary>
               <p>Wheeler propuso como hipótesis de trabajo que la información obtenida mediante preguntas físicas y registros podría ser fundamental para lo que llamamos realidad. En un experimento, una pregunta se concreta en un aparato y su respuesta en un registro.</p>
-              <p>Este juego es una analogía clásica con objetos y atributos definidos. Las observaciones cuánticas requieren otro modelo. El universo participativo sigue siendo una propuesta interpretativa, cuyo alcance va más allá de lo que prueba esta actividad.</p>
+              <p>«El mundo sin elegir» es una analogía clásica con objetos y atributos definidos. La escena de elección retardada calcula las predicciones de un interferómetro cuántico ideal. El universo participativo sigue siendo una propuesta interpretativa, cuyo alcance va más allá de lo que prueban estas actividades.</p>
               <p>Un sí o no se puede guardar en un bit. La información nueva que aporta depende de lo que ya sabías. Si todas las posibilidades compartían una propiedad, preguntar por ella deja la lista igual.</p>
               <p>La portada es una reinterpretación artística del universo participativo de Wheeler, realizada con generación de imágenes.</p>
             </details>
@@ -230,6 +257,10 @@ export default function App() {
             </div>
           </div>
         </section>
+        </div>
+        <div hidden={scene !== 'delayed'}><DelayedChoice active={scene === 'delayed'} />
+          <a className="wd-next-scene" href="#juego" onClick={() => setScene('questions')}>← Volver a las veinte preguntas</a>
+        </div>
         <MoreLabs current="wheeler" />
       </main>
       <footer className="wd-footer"><a href="/">∿ Volver a SPUM</a><span>Una buena pregunta cambia el recorrido.</span></footer>

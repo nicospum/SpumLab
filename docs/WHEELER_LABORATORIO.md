@@ -1,6 +1,40 @@
-# Wheeler · El mundo sin elegir
+# Wheeler · Preguntas y elección retardada
 
 Primera escena del laboratorio independiente `/wheeler/`, incorporado al catálogo de SPUM. La portada aprobada reinterpreta artísticamente el ojo y el universo participativo mediante una imagen generada. Se distribuye como WebP de 312 KB y 1254 × 1254 píxeles.
+
+La segunda escena se abre directamente en `/wheeler/#eleccion-retardada`. Las dos escenas conservan su estado durante la visita. Cambiar de escena pausa el viaje de un fotón; volver permite continuarlo. Recargar inicia una sesión nueva.
+
+## Segunda escena: elegir cuando ya entró
+
+Un interferómetro de Mach–Zehnder ideal permite enviar un fotón desde la fuente, ajustar la fase entre sus brazos y colocar o retirar el divisor de salida. Los controles se ubican sobre los componentes del montaje. Los detectores muestran por separado la probabilidad teórica y los clics acumulados con la configuración actual.
+
+- **Elegir antes** fija el montaje al emitir.
+- **Elegir después** pausa el viaje después del primer divisor y de la placa de fase, antes de llegar al divisor de salida. El visitante puede cambiar ese divisor y continuar. Esta pausa y la propagación ralentizada son ayudas didácticas.
+- **Salida reunida:** las amplitudes interfieren; la fase redistribuye las probabilidades entre D0 y D1.
+- **Salida abierta:** D0 identifica el brazo A y D1 el B; cada resultado tiene probabilidad 1/2, independiente de la fase.
+- Cada emisión produce un solo clic. Los dos trazos representan amplitudes de un solo fotón. El dibujo no afirma que se hayan observado dos trayectorias simultáneamente.
+- **Simular 100 detecciones** muestrea cien repeticiones independientes con la misma configuración. La tabla agrupa por fase, salida y momento de elección; cambiar controles preserva los resultados anteriores. Los puntos muestran los últimos 24 clics de esa condición.
+
+Tres exploraciones proponen comparar 0° con 180° en salida reunida, repetir con salida abierta y comparar elección temprana con tardía para un montaje final idéntico. Las explicaciones, la tabla y las fuentes se expanden debajo del experimento.
+
+### Modelo y alcance
+
+Con una convención equivalente de divisores 50/50 y fases de reflexión absorbidas en el origen de la fase total, el estado entre divisores es `( |A> + exp(iφ)|B> ) / sqrt(2)`. Recombinarlos produce `P(D0) = (1 + cos φ)/2`, `P(D1) = 1 − P(D0)`. Retirar el segundo divisor produce `P(D0) = P(D1) = 1/2`. El control expresa φ en grados, en pasos de 15°; el cálculo trigonométrico usa radianes.
+
+El modelo supone fotones individuales, óptica equilibrada, fase estable y detección perfecta. El tamaño del esquema, las formas de onda y sus tiempos de viaje no están a escala física. El ancho dibujado de las amplitudes salientes depende de la raíz de la probabilidad. El sorteo de un detector sigue la regla de Born. No se modelan pérdidas, ruido, decoherencia ni detalles de polarización de un dispositivo experimental concreto.
+
+La configuración se fija antes de que el fotón interactúe con el divisor final. La elección tardía produce las mismas probabilidades que una elección temprana con la misma fase y configuración final. Los registros anteriores no se modifican. La primera escena sigue siendo una analogía clásica; esta segunda implementa predicciones cuánticas de un montaje ideal.
+
+Referencias primarias: [Jacques et al., *Experimental realization of Wheeler's delayed-choice GedankenExperiment*, Science 315, 966–968 (2007)](https://arxiv.org/abs/quant-ph/0610241), y [Ma, Kofler y Zeilinger, *Delayed-choice gedanken experiments and their realizations*, Reviews of Modern Physics 88, 015005 (2016)](https://arxiv.org/abs/1407.2930). La realización de Jacques empleó fotones individuales, conmutación electroóptica aleatoria y separación espaciotemporal controlada. La elección manual con pausa del laboratorio es una adaptación para explorar sus probabilidades.
+
+### Implementación y verificación de elección retardada
+
+- `src/wheeler/delayed.ts`: probabilidades, sorteo, estados del viaje y registros inmutables. La fase se fija al emitir; la salida solo puede cambiar en reposo o en la pausa de elección. Cada condición retiene hasta 24 eventos recientes y existen como máximo 100 condiciones de controles.
+- `src/wheeler/DelayedBoard.tsx`: dibujo Canvas 2D, tamaño observado y resolución limitada a dos píxeles físicos por píxel CSS.
+- `src/wheeler/DelayedChoice.tsx` y `delayed.css`: controles DOM accesibles sobre el montaje, anuncios, foco, comparación y explicación. La animación se pausa al ocultar la escena o la pestaña; el tiempo de un frame se acota para evitar saltarse una elección.
+- `tests/wheeler-delayed.test.mjs`: diez pruebas del modelo. Incluyen amplitudes complejas calculadas independientemente, exclusión exacta de puertos oscuros, equivalencia entre elección temprana y tardía, bloqueos de controles, un clic por emisión, conservación de registros y entradas extremas.
+
+Tres agentes independientes revisaron ciencia, código y producto. La revisión científica contrastó 254 casos adicionales. El recorrido en navegador comprobó cambios de fase y salida, emisión individual, pausa, lote, tabla por condición, cambio de escena y conservación de la partida previa. Se corrigieron el encuadre de enlaces directos, el foco durante el viaje, el singular de los conteos y el espacio entre detectores y divisor en celular. Se comprobaron escritorio y tamaños móviles emulados. Continúan pendientes Safari, teléfonos físicos y pruebas de aprendizaje con participantes.
 
 ## Qué se juega y qué se aprende
 
